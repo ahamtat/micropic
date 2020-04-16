@@ -1,4 +1,8 @@
 ---
+proxy:
+  host: ""
+  port: 8080
+
 amqp:
   protocol: "amqp"
   user: "guest"

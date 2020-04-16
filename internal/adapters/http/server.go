@@ -14,8 +14,6 @@ import (
 	"github.com/AcroManiac/micropic/internal/adapters/logger"
 	"github.com/pkg/errors"
 
-	"github.com/spf13/viper"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,21 +24,25 @@ func init() {
 
 // Server structure
 type Server struct {
+	host   string
+	port   int
 	router *gin.Engine
 	srv    *http.Server
 	mgr    *broker.Manager
 }
 
 // NewServer constructs and initializes REST server
-func NewServer(mgr *broker.Manager) *Server {
+func NewServer(host string, port int, mgr *broker.Manager) *Server {
 	server := &Server{
+		host:   host,
+		port:   port,
 		router: gin.Default(),
 		srv:    nil,
 		mgr:    mgr,
 	}
 
 	// Set routing handlers
-	server.router.GET("/fill/:width/:height/:imageUrl", server.handlePreview)
+	server.router.GET("/fill/:width/:height/*imageUrl", server.handlePreview)
 
 	return server
 }
@@ -53,55 +55,64 @@ func convertString(s string) (n int) {
 	return
 }
 
+func removeSlash(s string) string {
+	if s[0] == '/' {
+		return s[1:]
+	}
+	return s
+}
+
 // Get preview from microservices
 // Test with:
-// curl -ki -X GET -H "Content-Type: application/json" -H "" http://127.0.0.1:2020/api/v3/gateway/configure/6774f85a-0a5b-4059-9b68-9385ecbdcf8e
+// curl -ki -X GET -H "Content-Type: image/jpeg" http://localhost:8080/fill/300/200/www.audubon.org/sites/default/files/a1_1902_16_barred-owl_sandra_rothenberg_kk.jpg
 func (s *Server) handlePreview(c *gin.Context) {
-	image := &entities.Image{
+	request := &entities.Request{
 		Width:   convertString(c.Param("width")),
 		Height:  convertString(c.Param("height")),
-		URL:     c.Param("imageUrl"),
-		Headers: nil,
+		URL:     removeSlash(c.Param("imageUrl")),
+		Headers: c.Request.Header,
 	}
-	logger.Debug("Image params from incoming HTTP request", "image", image)
+	logger.Debug("Image params from incoming HTTP request", "request", request)
 
 	// Check preview cache for image
 
-	//// Make preview and get file path
-	//response, err := s.mgr.DoPreviewerRPC(image)
+	//// Create RPC context
+	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	//defer cancel()
+
+	//// Call previewer and wait for response
+	//var preview []byte
+	//response, err := s.mgr.DoPreviewerRPC(ctx, request, preview)
 	//if err != nil {
-	//	errorText := "gateway RPC request failed"
-	//	logger.Error(errorText, "error", err, "gateway", gatewayID)
-	//	c.String(http.StatusBadRequest, errorText)
+	//	logger.Error("previewer RPC request failed", "error", err)
+	//	c.String(http.StatusInternalServerError, err.Error())
 	//	return
 	//}
-	//if response == nil {
-	//	errorText := "no gateway configuration returned"
-	//	logger.Error(errorText, "gateway", gatewayID)
-	//	c.String(http.StatusBadRequest, errorText)
+	//if response.Status.Code != http.StatusOK {
+	//	logger.Error("proxying an error from HTTP source", "error", response.Status)
+	//	c.String(response.Status.Code, response.Status.Text)
 	//	return
 	//}
 
-	//// Return preview file within HTTP response
-	//c.JSON(http.StatusOK, response)
+	// Return preview file within HTTP response
+	c.JSON(http.StatusOK, nil) //, response)
 }
 
-// Start RESTful server for all interfaces
+// Start HTTP server
 func (s *Server) Start() error {
-	addr := fmt.Sprintf(":%d", viper.GetInt("rest.port"))
 	s.srv = &http.Server{
-		Addr:    addr,
+		Addr:    fmt.Sprintf("%s:%d", s.host, s.port),
 		Handler: s.router,
 	}
 
 	if err := s.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		return errors.Wrap(err, "failed starting RESTful API server")
+		return errors.Wrap(err, "failed starting HTTP server")
 	}
 
 	return nil
 }
 
-// Stop RESTful API server gracefully
+// Stop HTTP server gracefully
 func (s *Server) Stop() error {
 	if s.srv == nil {
 		return errors.New("server object is not created")

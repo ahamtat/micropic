@@ -18,6 +18,6 @@ func CreateCorrelationID() string {
 
 // AmqpEnvelope structure to hold IoT message with AMQP metadata
 type AmqpEnvelope struct {
-	Message  *entities.Image
+	Message  *entities.Request
 	Metadata *AmqpMetadata
 }
