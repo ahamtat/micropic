@@ -117,17 +117,10 @@ func (rpc *RMQRPC) Stop() {
 // SendRequest sends tasks for previewer via RabbitMQ broker and
 // blocks execution until response or timeout
 func (rpc *RMQRPC) SendRequest(ctx context.Context, request *entities.Request) (response *entities.Response, err error) {
-	// Create message envelope
+	// Create message envelope and write it to broker
 	correlationID := broker.CreateCorrelationID()
-	env := &broker.AmqpEnvelope{
-		Message: request,
-		Metadata: &broker.AmqpMetadata{
-			CorrelationID: correlationID,
-			Type:          entities.MessageTypeToString(entities.ProxyingRequest),
-		},
-	}
-
-	// Write envelope to broker
+	env := broker.CreateEnvelope(request, correlationID,
+		entities.MessageTypeToString(entities.ProxyingRequest))
 	err = rpc.out.WriteEnvelope(env)
 	if err != nil {
 		return nil, errors.Wrap(err, "error writing envelope to RabbitMQ")
