@@ -8,8 +8,6 @@ import (
 
 	"github.com/AcroManiac/micropic/internal/adapters/broker"
 
-	"github.com/AcroManiac/micropic/internal/adapters/http"
-
 	"github.com/spf13/viper"
 
 	"github.com/AcroManiac/micropic/internal/adapters/logger"
@@ -65,7 +63,7 @@ type appObjects struct {
 	cancel  context.CancelFunc
 	manager *broker.Manager
 	rpc     *broker.RPC
-	proxy   *http.Server
+	proxy   *Server
 }
 
 func (app *appObjects) Init() {
@@ -92,7 +90,7 @@ func (app *appObjects) Init() {
 	}
 
 	// Create HTTP proxy server
-	app.proxy = http.NewServer(
+	app.proxy = NewServer(
 		viper.GetString("proxy.host"),
 		viper.GetInt("proxy.port"),
 		app.rpc)
