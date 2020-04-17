@@ -49,7 +49,7 @@ OUTER:
 					logger.Error("error reconnecting RabbitMQ", "error", err)
 					break OUTER
 				}
-				// TODO: Restart RPC
+				// TODO: Restart RMQRPC
 			}
 		}
 	}
@@ -62,7 +62,7 @@ type appObjects struct {
 	ctx     context.Context
 	cancel  context.CancelFunc
 	manager *broker.Manager
-	rpc     *broker.RPC
+	rpc     *RMQRPC
 	proxy   *Server
 }
 
@@ -83,10 +83,10 @@ func (app *appObjects) Init() {
 	}
 	logger.Info("RabbitMQ broker connected", "host", viper.GetString("amqp.host"))
 
-	// Create and start RPC object
-	app.rpc = broker.NewRPC(app.manager.Conn)
+	// Create and start RMQRPC object
+	app.rpc = NewRPC(app.manager.Conn)
 	if app.rpc == nil {
-		logger.Fatal("failed creating RabbitMQ RPC object")
+		logger.Fatal("failed creating RabbitMQ RMQRPC object")
 	}
 
 	// Create HTTP proxy server
@@ -100,9 +100,9 @@ func (app *appObjects) Init() {
 }
 
 func (app *appObjects) Start() {
-	// Start RPC loop
+	// Start RMQRPC loop
 	go app.rpc.Start()
-	logger.Info("RabbitMQ RPC object started successfully")
+	logger.Info("RabbitMQ RMQRPC object started successfully")
 
 	// Start broker connection listener
 	go app.manager.ConnectionListener(app.ctx)

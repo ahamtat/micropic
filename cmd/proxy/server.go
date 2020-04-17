@@ -10,8 +10,6 @@ import (
 
 	"github.com/AcroManiac/micropic/internal/domain/entities"
 
-	"github.com/AcroManiac/micropic/internal/adapters/broker"
-
 	"github.com/AcroManiac/micropic/internal/adapters/logger"
 	"github.com/pkg/errors"
 
@@ -29,11 +27,11 @@ type Server struct {
 	port   int
 	router *gin.Engine
 	srv    *http.Server
-	rpc    *broker.RPC
+	rpc    *RMQRPC
 }
 
 // NewServer constructs and initializes REST server
-func NewServer(host string, port int, rpc *broker.RPC) *Server {
+func NewServer(host string, port int, rpc *RMQRPC) *Server {
 	server := &Server{
 		host:   host,
 		port:   port,
@@ -77,14 +75,14 @@ func (s *Server) handlePreview(c *gin.Context) {
 
 	// Check preview cache for image
 
-	// Create RPC context
+	// Create RMQRPC context
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// Call previewer and wait for response
 	response, err := s.rpc.SendRequest(ctx, request)
 	if err != nil {
-		logger.Error("previewer RPC request failed", "error", err)
+		logger.Error("previewer RMQRPC request failed", "error", err)
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}

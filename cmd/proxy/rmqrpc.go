@@ -1,8 +1,10 @@
-package broker
+package main
 
 import (
 	"context"
 	"sync"
+
+	"github.com/AcroManiac/micropic/internal/adapters/broker"
 
 	"github.com/AcroManiac/micropic/internal/domain/entities"
 
@@ -14,22 +16,14 @@ import (
 	"github.com/streadway/amqp"
 )
 
-const (
-	exchangeName       = "micropic"
-	requestQueueName   = "previewer.requestQueue"
-	requestRoutingKey  = "previewer.requestQueue.tasks"
-	responseQueueName  = "previewer.responseQueue"
-	responseRoutingKey = "previewer.responseQueue.previews"
-)
-
-// RPC holds objects for making Remote Procedure Calls via RabbitMQ broker
+// RMQRPC holds objects for making Remote Procedure Calls via RabbitMQ broker
 // See https://medium.com/@eugenfedchenko/rpc-over-rabbitmq-golang-ff3d2b312a69
 // && https://www.rabbitmq.com/tutorials/tutorial-six-go.html
-type RPC struct {
-	out      *AmqpReader
-	in       *AmqpWriter
+type RMQRPC struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
+	out      *broker.AmqpReader
+	in       *broker.AmqpWriter
 	rpcMx    sync.Mutex
 	rpcCalls rpcPendingCallMap
 }
@@ -42,25 +36,25 @@ type rpcPendingCall struct {
 type rpcPendingCallMap map[string]*rpcPendingCall
 
 // NewRPC constructor
-func NewRPC(amqpConn *amqp.Connection) *RPC {
+func NewRPC(conn *amqp.Connection) *RMQRPC {
 	// Create cancel context
 	ctx, cancel := context.WithCancel(context.Background())
 
-	out := NewAmqpReader(ctx, amqpConn, responseQueueName, responseRoutingKey)
-	in := NewAmqpWriter(amqpConn, requestQueueName, requestRoutingKey)
+	out := broker.NewAmqpReader(ctx, conn, broker.ResponseQueueName, broker.ResponseRoutingKey)
+	in := broker.NewAmqpWriter(conn, broker.RequestQueueName, broker.RequestRoutingKey)
 
-	return &RPC{
-		out:      out,
-		in:       in,
+	return &RMQRPC{
 		ctx:      ctx,
 		cancel:   cancel,
+		out:      out,
+		in:       in,
 		rpcMx:    sync.Mutex{},
 		rpcCalls: make(rpcPendingCallMap),
 	}
 }
 
 // Close reading and writing channels
-func (rpc *RPC) Close() error {
+func (rpc *RMQRPC) Close() {
 	rpc.Stop()
 
 	// Close pending calls to quit blocked goroutines
@@ -79,12 +73,10 @@ func (rpc *RPC) Close() error {
 		logger.Error("error closing gateway input channel",
 			"error", err, "caller", "GatewayChannel")
 	}
-
-	return nil
 }
 
 // Start functions make separate goroutine for message receiving and processing
-func (rpc *RPC) Start() {
+func (rpc *RMQRPC) Start() {
 	// Read and process messages from previewer
 	for {
 		select {
@@ -102,7 +94,7 @@ func (rpc *RPC) Start() {
 				break
 			}
 
-			// Check for RPC responses
+			// Check for RMQRPC responses
 			if len(inputEnvelope.Metadata.CorrelationID) > 0 {
 				// Make pending call
 				rpc.rpcMx.Lock()
@@ -119,19 +111,19 @@ func (rpc *RPC) Start() {
 }
 
 // Stop message processing and writing off status to database
-func (rpc *RPC) Stop() {
+func (rpc *RMQRPC) Stop() {
 	// Stop goroutines - fire context cancelling
 	rpc.cancel()
 }
 
 // SendRequest sends tasks for previewer via RabbitMQ broker and
 // blocks execution until response or timeout
-func (rpc *RPC) SendRequest(ctx context.Context, request *entities.Request) (response *entities.Response, err error) {
+func (rpc *RMQRPC) SendRequest(ctx context.Context, request *entities.Request) (response *entities.Response, err error) {
 	// Create message envelope
-	correlationID := CreateCorrelationID()
-	env := &AmqpEnvelope{
+	correlationID := broker.CreateCorrelationID()
+	env := &broker.AmqpEnvelope{
 		Message: request,
-		Metadata: &AmqpMetadata{
+		Metadata: &broker.AmqpMetadata{
 			CorrelationID: correlationID,
 			Type:          entities.MessageTypeToString(entities.ProxyingRequest),
 		},
@@ -140,7 +132,7 @@ func (rpc *RPC) SendRequest(ctx context.Context, request *entities.Request) (res
 	// Write envelope to broker
 	err = rpc.in.WriteEnvelope(env)
 	if err != nil {
-		return nil, errors.Wrap(err, "error writing RPC buffer to broker")
+		return nil, errors.Wrap(err, "error writing RMQRPC buffer to broker")
 	}
 
 	// Create and keep pending object
@@ -154,7 +146,7 @@ func (rpc *RPC) SendRequest(ctx context.Context, request *entities.Request) (res
 	case <-rpcCall.done:
 		response, _ = rpcCall.data.(*entities.Response)
 	case <-ctx.Done():
-		err = errors.New("timeout elapsed on RPC request sending")
+		err = errors.New("timeout elapsed on RMQRPC request sending")
 	}
 
 	// Release pending object
