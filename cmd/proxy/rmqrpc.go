@@ -22,8 +22,8 @@ import (
 type RMQRPC struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
-	out      *broker.AmqpReader
-	in       *broker.AmqpWriter
+	in       *broker.AmqpReader
+	out      *broker.AmqpWriter
 	rpcMx    sync.Mutex
 	rpcCalls rpcPendingCallMap
 }
@@ -40,14 +40,14 @@ func NewRPC(conn *amqp.Connection) *RMQRPC {
 	// Create cancel context
 	ctx, cancel := context.WithCancel(context.Background())
 
-	out := broker.NewAmqpReader(ctx, conn, broker.ResponseQueueName, broker.ResponseRoutingKey)
-	in := broker.NewAmqpWriter(conn, broker.RequestQueueName, broker.RequestRoutingKey)
+	in := broker.NewAmqpReader(ctx, conn, broker.ResponseQueueName, broker.ResponseRoutingKey)
+	out := broker.NewAmqpWriter(conn, broker.RequestQueueName, broker.RequestRoutingKey)
 
 	return &RMQRPC{
 		ctx:      ctx,
 		cancel:   cancel,
-		out:      out,
 		in:       in,
+		out:      out,
 		rpcMx:    sync.Mutex{},
 		rpcCalls: make(rpcPendingCallMap),
 	}
@@ -65,13 +65,11 @@ func (rpc *RMQRPC) Close() {
 	rpc.rpcMx.Unlock()
 
 	// Close i/o channels
-	if err := rpc.out.Close(); err != nil {
-		logger.Error("error closing gateway output channel",
-			"error", err, "caller", "GatewayChannel")
-	}
 	if err := rpc.in.Close(); err != nil {
-		logger.Error("error closing gateway input channel",
-			"error", err, "caller", "GatewayChannel")
+		logger.Error("error closing RabbitMQ reader", "error", err)
+	}
+	if err := rpc.out.Close(); err != nil {
+		logger.Error("error closing RabbitMQ writer", "error", err)
 	}
 }
 
@@ -84,7 +82,7 @@ func (rpc *RMQRPC) Start() {
 			return
 		default:
 			// Read input message
-			inputEnvelope, toBeClosed, err := rpc.out.ReadEnvelope()
+			inputEnvelope, toBeClosed, err := rpc.in.ReadEnvelope()
 			if err != nil {
 				logger.Error("error reading channel", "error", err)
 				break
@@ -130,7 +128,7 @@ func (rpc *RMQRPC) SendRequest(ctx context.Context, request *entities.Request) (
 	}
 
 	// Write envelope to broker
-	err = rpc.in.WriteEnvelope(env)
+	err = rpc.out.WriteEnvelope(env)
 	if err != nil {
 		return nil, errors.Wrap(err, "error writing RMQRPC buffer to broker")
 	}
