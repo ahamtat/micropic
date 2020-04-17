@@ -1,0 +1,11 @@
+---
+amqp:
+  protocol: "amqp"
+  user: "guest"
+  password: "guest"
+  host: "127.0.0.1"
+  port: 5672
+
+log:
+  file: ./previewer.log
+  level: debug
