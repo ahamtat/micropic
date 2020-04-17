@@ -1,14 +1,14 @@
 package broker
 
 import (
-	"github.com/AcroManiac/micropic/internal/domain/entities"
+	"github.com/AcroManiac/micropic/internal/domain/interfaces"
 	"github.com/google/uuid"
 )
 
 // AmqpMetadata holds extra data for AMQP message
 type AmqpMetadata struct {
 	CorrelationID string
-	ReplyTo       string
+	Type          string
 }
 
 // CreateCorrelationID returns correlation UUID
@@ -16,8 +16,8 @@ func CreateCorrelationID() string {
 	return uuid.New().String()
 }
 
-// AmqpEnvelope structure to hold IoT message with AMQP metadata
+// AmqpEnvelope holds message with AMQP metadata
 type AmqpEnvelope struct {
-	Message  *entities.Request
+	Message  interfaces.Message
 	Metadata *AmqpMetadata
 }

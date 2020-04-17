@@ -28,17 +28,17 @@ type Server struct {
 	port   int
 	router *gin.Engine
 	srv    *http.Server
-	mgr    *broker.Manager
+	rpc    *broker.RPC
 }
 
 // NewServer constructs and initializes REST server
-func NewServer(host string, port int, mgr *broker.Manager) *Server {
+func NewServer(host string, port int, rpc *broker.RPC) *Server {
 	server := &Server{
 		host:   host,
 		port:   port,
 		router: gin.Default(),
 		srv:    nil,
-		mgr:    mgr,
+		rpc:    rpc,
 	}
 
 	// Set routing handlers
@@ -76,23 +76,22 @@ func (s *Server) handlePreview(c *gin.Context) {
 
 	// Check preview cache for image
 
-	//// Create RPC context
-	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	//defer cancel()
+	// Create RPC context
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	//// Call previewer and wait for response
-	//var preview []byte
-	//response, err := s.mgr.DoPreviewerRPC(ctx, request, preview)
-	//if err != nil {
-	//	logger.Error("previewer RPC request failed", "error", err)
-	//	c.String(http.StatusInternalServerError, err.Error())
-	//	return
-	//}
-	//if response.Status.Code != http.StatusOK {
-	//	logger.Error("proxying an error from HTTP source", "error", response.Status)
-	//	c.String(response.Status.Code, response.Status.Text)
-	//	return
-	//}
+	// Call previewer and wait for response
+	response, err := s.rpc.SendRequest(ctx, request)
+	if err != nil {
+		logger.Error("previewer RPC request failed", "error", err)
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if response.Status.Code != http.StatusOK {
+		logger.Error("proxying an error from HTTP source", "error", response.Status)
+		c.String(response.Status.Code, response.Status.Text)
+		return
+	}
 
 	// Return preview file within HTTP response
 	c.JSON(http.StatusOK, nil) //, response)

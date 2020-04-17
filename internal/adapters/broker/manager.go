@@ -3,7 +3,6 @@ package broker
 import (
 	"context"
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/AcroManiac/micropic/internal/adapters/logger"
@@ -13,18 +12,10 @@ import (
 	"github.com/cenkalti/backoff/v4"
 )
 
-const (
-	exchangeName = "micropic"
-	queueName    = "previewerQueue"
-	routingKey   = "previewerQueue.images"
-)
-
 type Manager struct {
 	connURL string
 	Conn    *amqp.Connection
 	Done    chan error
-	wr      io.WriteCloser
-	rd      io.ReadCloser
 }
 
 func NewManager(protocol, user, password, host string, port int) *Manager {
@@ -66,9 +57,6 @@ func (m *Manager) ConnectionListener(ctx context.Context) {
 }
 
 func (m *Manager) Reconnect(ctx context.Context) error {
-	// Close i/o channels
-	m.closeIOChannels()
-
 	// Create reconnect backoff
 	be := backoff.NewExponentialBackOff()
 	be.MaxElapsedTime = time.Minute
@@ -98,37 +86,7 @@ func (m *Manager) Reconnect(ctx context.Context) error {
 	}
 }
 
-func (m *Manager) GetWriter() io.Writer {
-	if m.wr == nil {
-		// Create broker writer
-		m.wr = NewAmqpWriter(m.Conn)
-	}
-	return m.wr
-}
-
-func (m *Manager) GetReader(ctx context.Context) io.Reader {
-	if m.rd == nil {
-		// Create broker reader
-		m.rd = NewAmqpReader(ctx, m.Conn)
-	}
-	return m.rd
-}
-
-func (m *Manager) closeIOChannels() {
-	if m.rd != nil {
-		m.rd.Close()
-		m.rd = nil
-	}
-	if m.wr != nil {
-		m.wr.Close()
-		m.wr = nil
-	}
-}
-
 func (m *Manager) Close() error {
-	// Close i/o channels
-	m.closeIOChannels()
-
 	// Close connection notify channel
 	if m.Done != nil {
 		close(m.Done)

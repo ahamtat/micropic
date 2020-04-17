@@ -11,7 +11,7 @@ type ChannelWithQueue struct {
 	Que amqp.Queue
 }
 
-func NewChannelWithQueue(conn *amqp.Connection, queueName *string) (*ChannelWithQueue, error) {
+func NewChannelWithQueue(conn *amqp.Connection, queueName, routingKey string) (*ChannelWithQueue, error) {
 	// Open channel
 	ch, err := conn.Channel()
 	if err != nil {
@@ -32,36 +32,38 @@ func NewChannelWithQueue(conn *amqp.Connection, queueName *string) (*ChannelWith
 		return nil, errors.Wrap(err, "failed to declare an exchange")
 	}
 
+	if len(queueName) == 0 || len(routingKey) == 0 {
+		return nil, errors.New("no queue name or routing key")
+	}
+
 	// Create queue if its name exists
 	var que amqp.Queue
-	if queueName != nil {
-		que, err = ch.QueueDeclare(
-			*queueName, // name
-			false,      // durable
-			false,      // delete when unused
-			true,       // exclusive
-			false,      // no-wait
-			nil,        // arguments
-		)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to declare a queue")
-		}
+	que, err = ch.QueueDeclare(
+		queueName, // name
+		false,     // durable
+		false,     // delete when unused
+		true,      // exclusive
+		false,     // no-wait
+		nil,       // arguments
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to declare a queue")
+	}
 
-		// Binding queue to exchange
-		logger.Debug(
-			"Binding queue to exchange with routing key",
-			"queue", que.Name,
-			"exchange", exchangeName,
-			"routing_key", routingKey)
-		err = ch.QueueBind(
-			que.Name,     // queue name
-			routingKey,   // routing key
-			exchangeName, // exchange
-			false,
-			nil)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to bind a queue")
-		}
+	// Binding queue to exchange
+	logger.Debug(
+		"Binding queue to exchange with routing key",
+		"queue", que.Name,
+		"exchange", exchangeName,
+		"routing_key", routingKey)
+	err = ch.QueueBind(
+		que.Name,     // queue name
+		routingKey,   // routing key
+		exchangeName, // exchange
+		false,
+		nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to bind a queue")
 	}
 
 	return &ChannelWithQueue{
