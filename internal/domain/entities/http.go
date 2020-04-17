@@ -2,12 +2,12 @@ package entities
 
 const (
 	ProxyingRequest int = iota
-	SourceResponse
+	PreviewerResponse
 )
 
 var messageTypeText = map[int]string{
-	ProxyingRequest: "Proxying HTTP request",
-	SourceResponse:  "Response from image source",
+	ProxyingRequest:   "Proxying HTTP request",
+	PreviewerResponse: "Response from previewer",
 }
 
 // MessageTypeToString convert from integer value
@@ -49,7 +49,7 @@ type Response struct {
 
 // Type implementation for image source response
 func (r Response) Type() int {
-	return SourceResponse
+	return PreviewerResponse
 }
 
 // StatusError holds together HTTP response status code and text

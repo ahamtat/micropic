@@ -130,7 +130,7 @@ func (rpc *RMQRPC) SendRequest(ctx context.Context, request *entities.Request) (
 	// Write envelope to broker
 	err = rpc.out.WriteEnvelope(env)
 	if err != nil {
-		return nil, errors.Wrap(err, "error writing RMQRPC buffer to broker")
+		return nil, errors.Wrap(err, "error writing envelope to RabbitMQ")
 	}
 
 	// Create and keep pending object

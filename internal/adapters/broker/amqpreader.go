@@ -82,7 +82,7 @@ func (r *AmqpReader) ReadEnvelope() (env *AmqpEnvelope, close bool, err error) {
 			switch messageType {
 			case entities.ProxyingRequest:
 				inputMessage = &entities.Request{}
-			case entities.SourceResponse:
+			case entities.PreviewerResponse:
 				inputMessage = &entities.Response{}
 			}
 
