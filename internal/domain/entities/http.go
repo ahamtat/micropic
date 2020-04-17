@@ -42,8 +42,9 @@ func (r Request) Type() int {
 
 // Response data
 type Response struct {
-	Preview []byte `json:"preview,omitempty"`
-	Status  Status `json:"status"`
+	Preview  []byte `json:"preview,omitempty"`
+	Filename string `json:"filename,omitempty"`
+	Status   Status `json:"status"`
 }
 
 // Type implementation for image source response

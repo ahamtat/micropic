@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
@@ -94,7 +95,13 @@ func (s *Server) handlePreview(c *gin.Context) {
 	}
 
 	// Return preview file within HTTP response
-	c.JSON(http.StatusOK, nil) //, response)
+	reader := bytes.NewReader(response.Preview)
+	contentLength := int64(len(response.Preview))
+	contentType := "application/octet-stream"
+	extraHeaders := map[string]string{
+		"Content-Disposition": `attachment; filename="` + response.Filename + `"`,
+	}
+	c.DataFromReader(http.StatusOK, contentLength, contentType, reader, extraHeaders)
 }
 
 // Start HTTP server
