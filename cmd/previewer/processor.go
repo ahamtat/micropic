@@ -16,11 +16,13 @@ import (
 )
 
 // ImageProcessor
-type ImageProcessor struct{}
+type ImageProcessor struct {
+	quality int
+}
 
 // NewImageProcessor constructor
-func NewImageProcessor() *ImageProcessor {
-	return &ImageProcessor{}
+func NewImageProcessor(quality int) *ImageProcessor {
+	return &ImageProcessor{quality: quality}
 }
 
 func errorResponse(filename, errText string) *entities.Response {
@@ -71,7 +73,7 @@ func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *en
 
 	// The Buffer satisfies the Writer interface so we can use it with Encode
 	// In previous example we encoded to a file, this time to a temp buffer
-	if err := jpeg.Encode(&buff, croppedImage, &jpeg.Options{Quality: 95}); err != nil {
+	if err := jpeg.Encode(&buff, croppedImage, &jpeg.Options{Quality: p.quality}); err != nil {
 		logger.Error("failed encoding preview to JPEG", "error", err)
 		return errorResponse(filename, err.Error())
 	}

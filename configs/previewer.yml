@@ -1,4 +1,7 @@
 ---
+previewer:
+  quality: 95
+
 amqp:
   protocol: "amqp"
   user: "guest"

@@ -22,7 +22,7 @@ type RMQListener struct {
 	previewer *usecases.Previewer
 }
 
-func NewRMQListener(conn *amqp.Connection) *RMQListener {
+func NewRMQListener(conn *amqp.Connection, quality int) *RMQListener {
 	// Create cancel context
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -31,7 +31,7 @@ func NewRMQListener(conn *amqp.Connection) *RMQListener {
 
 	previewer := usecases.NewPreviewer(
 		NewHTTPImageLoader(),
-		NewImageProcessor(),
+		NewImageProcessor(quality),
 		[]interfaces.Sender{
 			NewRMQSender(out),
 			NewCacheSender(),
