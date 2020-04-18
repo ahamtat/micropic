@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 
+	"github.com/AcroManiac/micropic/internal/domain/interfaces"
+	"github.com/AcroManiac/micropic/internal/domain/usecases"
+
 	"github.com/AcroManiac/micropic/internal/domain/entities"
 
 	"github.com/AcroManiac/micropic/internal/adapters/logger"
@@ -12,10 +15,11 @@ import (
 )
 
 type RMQListener struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-	in     *broker.AmqpReader
-	out    *broker.AmqpWriter
+	ctx       context.Context
+	cancel    context.CancelFunc
+	in        *broker.AmqpReader
+	out       *broker.AmqpWriter
+	previewer *usecases.Previewer
 }
 
 func NewRMQListener(conn *amqp.Connection) *RMQListener {
@@ -25,11 +29,20 @@ func NewRMQListener(conn *amqp.Connection) *RMQListener {
 	in := broker.NewAmqpReader(ctx, conn, broker.RequestQueueName, broker.RequestRoutingKey)
 	out := broker.NewAmqpWriter(conn, broker.ResponseQueueName, broker.ResponseRoutingKey)
 
+	previewer := usecases.NewPreviewer(
+		NewHTTPImageLoader(),
+		NewImageProcessor(),
+		[]interfaces.Sender{
+			NewRMQSender(out),
+			NewCacheSender(),
+		})
+
 	return &RMQListener{
-		ctx:    ctx,
-		cancel: cancel,
-		in:     in,
-		out:    out,
+		ctx:       ctx,
+		cancel:    cancel,
+		in:        in,
+		out:       out,
+		previewer: previewer,
 	}
 }
 
@@ -61,7 +74,7 @@ func (l *RMQListener) Start() {
 				break
 			}
 			if toBeClosed {
-				// Reading channel possibly is to be closed
+				// Reading channel is to be closed possibly
 				break
 			}
 
@@ -76,28 +89,14 @@ func (l *RMQListener) Start() {
 
 				// WARNING!!! CRIPPLED CODE!!!
 				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				l.ProcessRequest(request, envelope.Metadata.CorrelationID)
+				l.previewer.Process(request, envelope.Metadata.CorrelationID)
 				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				// For tutorial purposes this code was made non-concurrent
 				// In real application one should use:
-				// go l.ProcessRequest(request, envelope.Metadata.CorrelationID)
+				// go l.previewer.Process(request, envelope.Metadata.CorrelationID)
 			}
 		}
 	}
-}
-
-func (l *RMQListener) ProcessRequest(request *entities.Request, correlationID string) {
-	//// Load and process image
-	//var response *entities.Response
-	//
-	//// Send preview response to RabbitMQ
-	//env := broker.CreateEnvelope(response, correlationID,
-	//	entities.MessageTypeToString(entities.PreviewerResponse))
-	//if err := l.out.WriteEnvelope(env); err != nil {
-	//	logger.Error("error writing envelope to RabbitMQ", "error", err, "caller", "ProcessRequest")
-	//}
-
-	// Send preview to cache
 }
 
 // Stop message listening

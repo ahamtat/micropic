@@ -47,6 +47,15 @@ type Response struct {
 	Status   Status `json:"status"`
 }
 
+// NewResponse object constructor
+func NewResponse(preview []byte, filename string, status Status) *Response {
+	return &Response{
+		Preview:  preview,
+		Filename: filename,
+		Status:   status,
+	}
+}
+
 // Type implementation for image source response
 func (r Response) Type() int {
 	return PreviewerResponse
