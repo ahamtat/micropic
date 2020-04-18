@@ -42,7 +42,7 @@ func NewChannelWithQueue(conn *amqp.Connection, queueName, routingKey string) (*
 		queueName, // name
 		false,     // durable
 		false,     // delete when unused
-		true,      // exclusive
+		false,     // exclusive
 		false,     // no-wait
 		nil,       // arguments
 	)
