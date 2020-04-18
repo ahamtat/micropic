@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -92,9 +93,19 @@ func (s *Server) handlePreview(c *gin.Context) {
 		return
 	}
 
+	// Decode preview from Base64
+	buffSize := base64.StdEncoding.DecodedLen(len(response.Preview))
+	preview := make([]byte, buffSize)
+	_, err = base64.StdEncoding.Decode(preview, response.Preview)
+	if err != nil {
+		logger.Error("error decoding Base64 to preview", "error", err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
 	// Return preview file within HTTP response
-	reader := bytes.NewReader(response.Preview)
-	contentLength := int64(len(response.Preview))
+	reader := bytes.NewReader(preview)
+	contentLength := int64(len(preview))
 	contentType := "application/octet-stream"
 	extraHeaders := map[string]string{
 		"Content-Disposition": `attachment; filename="` + response.Filename + `"`,
