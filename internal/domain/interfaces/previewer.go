@@ -17,5 +17,5 @@ type ImageProcessor interface {
 // Sender interface
 type Sender interface {
 	// Send response to consumer
-	Send(response *entities.Response, objs ...interface{})
+	Send(response *entities.Response, obj interface{})
 }

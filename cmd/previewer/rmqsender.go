@@ -14,13 +14,13 @@ func NewRMQSender(w *broker.AmqpWriter) *RMQSender {
 	return &RMQSender{w: w}
 }
 
-func (s *RMQSender) Send(response *entities.Response, objs ...interface{}) {
+func (s *RMQSender) Send(response *entities.Response, obj interface{}) {
 	// Get correlation
-	if objs == nil {
+	if obj == nil {
 		logger.Error("no correlation id in params")
 		return
 	}
-	correlationID, ok := objs[0].(string)
+	correlationID, ok := obj.(string)
 	if !ok {
 		logger.Error("error type asserting correlation id to string")
 	}

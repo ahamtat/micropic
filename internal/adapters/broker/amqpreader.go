@@ -113,9 +113,18 @@ func (r *AmqpReader) ReadEnvelope() (env *AmqpEnvelope, close bool, err error) {
 func (r AmqpReader) PrintMessage(message interfaces.Message) {
 	// Slim long preview
 	response, ok := message.(*entities.Response)
-	if ok && len(response.Preview) > 0 {
-		response.Preview = []byte("Some Base64 code ;)")
-		logger.Debug("Response from previewer", "response", message)
+	if ok {
+		respCopy := &entities.Response{
+			Preview: func(p []byte) []byte {
+				if p != nil {
+					return []byte("Some Base64 code ;)")
+				}
+				return nil
+			}(response.Preview),
+			Filename: response.Filename,
+			Status:   response.Status,
+		}
+		logger.Debug("Response from previewer", "response", respCopy)
 		return
 	}
 	logger.Debug("Request from HTTP proxy", "request", message)

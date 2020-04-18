@@ -40,7 +40,7 @@ func errorResponse(filename, errText string) *entities.Response {
 // return preview in Base64 format or error status
 func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *entities.Response {
 	// Extract filename
-	filename := request.URL[strings.LastIndex(request.URL, "/"):]
+	filename := request.URL[strings.LastIndex(request.URL, "/")+1:]
 
 	// Decode image
 	img, format, err := image.Decode(bytes.NewReader(srcImage))

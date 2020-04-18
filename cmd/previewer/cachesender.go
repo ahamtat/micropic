@@ -11,6 +11,6 @@ func NewCacheSender() *CacheSender {
 	return &CacheSender{}
 }
 
-func (s *CacheSender) Send(response *entities.Response, objs ...interface{}) {
+func (s *CacheSender) Send(response *entities.Response, obj interface{}) {
 	//
 }

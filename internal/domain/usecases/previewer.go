@@ -27,19 +27,19 @@ func NewPreviewer(
 	}
 }
 
-func (p *Previewer) send(response *entities.Response, objs ...interface{}) {
+func (p *Previewer) send(response *entities.Response, obj interface{}) {
 	for _, s := range p.senders {
-		s.Send(response, objs)
+		s.Send(response, obj)
 	}
 }
 
 // Process proxy request to preview response
-func (p *Previewer) Process(request *entities.Request, objs ...interface{}) {
+func (p *Previewer) Process(request *entities.Request, obj interface{}) {
 	// Load image from external source
 	srcImage, status := p.loader.Load(request)
 	if status.Code != http.StatusOK {
 		response := entities.NewResponse(srcImage, "", *status)
-		p.send(response, objs)
+		p.send(response, obj)
 		return
 	}
 
@@ -47,5 +47,5 @@ func (p *Previewer) Process(request *entities.Request, objs ...interface{}) {
 	response := p.processor.Process(srcImage, request)
 
 	// Send preview response to consumers
-	p.send(response, objs)
+	p.send(response, obj)
 }
