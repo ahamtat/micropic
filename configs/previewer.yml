@@ -1,6 +1,6 @@
 ---
 previewer:
-  quality: 95
+  quality: 70
 
 amqp:
   protocol: "amqp"

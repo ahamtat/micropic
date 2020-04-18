@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/artyom/smartcrop"
+	"github.com/muesli/smartcrop/nfnt"
+
+	"github.com/muesli/smartcrop"
 
 	"github.com/AcroManiac/micropic/internal/adapters/logger"
 
@@ -51,12 +53,16 @@ func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *en
 	logger.Debug("Source image decoded successfully", "filename", filename, "format", format)
 
 	// Make preview cropping from decoded image
-	cropArea, err := smartcrop.Crop(img, request.Width, request.Height)
+	resizer := nfnt.NewDefaultResizer()
+	analyzer := smartcrop.NewAnalyzer(resizer)
+	cropArea, err := analyzer.FindBestCrop(img, request.Width, request.Height)
 	if err != nil {
 		logger.Error("failed searching best crop area", "error", err)
 		return errorResponse(filename, err.Error())
 	}
+	logger.Debug("Best crop", "area", cropArea)
 
+	// Crop image with requested aspect ratio
 	type subImager interface {
 		SubImage(image.Rectangle) image.Image
 	}
@@ -67,13 +73,18 @@ func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *en
 		return errorResponse(filename, errText)
 	}
 	croppedImage := si.SubImage(cropArea)
+	logger.Debug("Cropped image dimensions",
+		"width", croppedImage.Bounds().Dx(), "height", croppedImage.Bounds().Dy())
+
+	// Resize image to fit requested params
+	resizedImage := resizer.Resize(croppedImage, uint(request.Width), uint(request.Height))
 
 	// In-memory buffer to store JPEG image before we Base64 encode it
 	var buff bytes.Buffer
 
 	// The Buffer satisfies the Writer interface so we can use it with Encode
 	// In previous example we encoded to a file, this time to a temp buffer
-	if err := jpeg.Encode(&buff, croppedImage, &jpeg.Options{Quality: p.quality}); err != nil {
+	if err := jpeg.Encode(&buff, resizedImage, &jpeg.Options{Quality: p.quality}); err != nil {
 		logger.Error("failed encoding preview to JPEG", "error", err)
 		return errorResponse(filename, err.Error())
 	}
@@ -81,6 +92,7 @@ func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *en
 	// Encode the bytes in the buffer to a base64 string
 	preview := make([]byte, base64.StdEncoding.EncodedLen(len(buff.Bytes())))
 	base64.StdEncoding.Encode(preview, buff.Bytes())
+	logger.Debug("Preview made successfully")
 
 	// Preview made successfully
 	return &entities.Response{
