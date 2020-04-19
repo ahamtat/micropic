@@ -11,3 +11,8 @@ message MakePreviewRequest {
     PreviewParams params = 1;
     map<string, string> headers = 2;
 }
+
+message MakePreviewResponse {
+    Preview preview = 1;
+    Status status = 2;
+}
