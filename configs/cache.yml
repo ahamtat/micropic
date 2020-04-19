@@ -1,0 +1,12 @@
+---
+cache:
+  dirname: "./cache"
+  size: 100
+
+grpc:
+  host: "0.0.0.0"
+  port: 9090
+
+log:
+  file: ./cache.log
+  level: debug
