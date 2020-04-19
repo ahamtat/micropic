@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "preview.proto";
+
+message SavePreviewRequest {
+    Preview preview = 1;
+}
+
+message SavePreviewResponse {
+    string error = 1;
+}
+
+message GetPreviewRequest {
+    string url = 1;
+    uint32 width = 2;
+    uint32 height = 3;
+}
+
+message GetPreviewResponse {
+    oneof result {
+        Preview preview = 1;
+        string error = 2;
+    }
+}
+
+service Cache {
+    rpc SavePreview(SavePreviewRequest) returns (SavePreviewResponse) {};
+    rpc GetPreview(GetPreviewRequest) returns (GetPreviewResponse) {};
+}

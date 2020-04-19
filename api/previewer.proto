@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "preview.proto";
+
+message Status {
+    uint32 code = 1;
+    string text = 2;
+}
+
+message MakePreviewRequest {
+    PreviewParams params = 1;
+    map<string, string> headers = 2;
+}

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+message PreviewParams {
+    string url = 1;
+    uint32 width = 2;
+    uint32 height = 3;
+}
+
+message Preview {
+    PreviewParams params = 1;
+    bytes  image = 2;
+}
