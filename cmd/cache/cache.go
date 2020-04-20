@@ -5,6 +5,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/AcroManiac/micropic/internal/adapters/file"
+
+	"github.com/AcroManiac/micropic/internal/domain/interfaces"
+	"github.com/AcroManiac/micropic/internal/domain/usecases"
+	"github.com/spf13/viper"
+
 	"github.com/AcroManiac/micropic/internal/adapters/logger"
 
 	"github.com/AcroManiac/micropic/internal/adapters/application"
@@ -34,10 +40,17 @@ func main() {
 }
 
 type appObjects struct {
+	cache interfaces.Cache
 	//rpc
 }
 
 func (app *appObjects) Init() {
+	// Create cache object
+	app.cache = usecases.NewLRUCache(
+		viper.GetInt("cache.size"),
+		file.NewFileStorage(
+			viper.GetString("cache.dirname")))
+
 	// Create and start RPC object
 	//app.rpc =
 	//if app.rmq == nil {
@@ -53,4 +66,6 @@ func (app *appObjects) Start() {
 
 func (app *appObjects) Stop() {
 	// Stop gRPC gracefully
+	// Clear file cache
+	_ = app.cache.Clean()
 }

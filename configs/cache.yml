@@ -1,7 +1,7 @@
 ---
 cache:
-  dirname: "./cache"
-  size: 100
+  dirname: "./cachedir"
+  size: 10
 
 grpc:
   host: "0.0.0.0"
