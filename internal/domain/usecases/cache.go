@@ -97,22 +97,17 @@ func (c *LRUCache) Get(params *entities.PreviewParams) (*entities.Preview, error
 func (c *LRUCache) Evict() error {
 	// Get LRU item
 	evictedItem := c.paramsList.PopTail()
+	if evictedItem == nil {
+		return errors.New("failed removing item from doubly linked list tail")
+	}
+	params, ok := evictedItem.(*entities.PreviewParams)
+	if !ok {
+		return errors.New("failed type asserting empty interface to preview params")
+	}
 
 	// Remove item from hash map
-	var (
-		hash uint64
-		item *dllItem
-	)
+	hash := createHash(params)
 	c.mx.Lock()
-	for hash, item = range c.hashItemMap {
-		if item == evictedItem {
-			break
-		}
-	}
-	if hash == 0 {
-		c.mx.Unlock()
-		return errors.New("failed finding hash kay by evicted doubly linked list item")
-	}
 	delete(c.hashItemMap, hash)
 	c.mx.Unlock()
 
