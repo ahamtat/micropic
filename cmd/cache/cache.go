@@ -1,14 +1,20 @@
 package main
 
 import (
+	"fmt"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/AcroManiac/micropic/internal/adapters/file"
-
 	"github.com/AcroManiac/micropic/internal/domain/interfaces"
 	"github.com/AcroManiac/micropic/internal/domain/usecases"
+
+	"github.com/AcroManiac/micropic/internal/adapters/grpcapi"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
 	"github.com/spf13/viper"
 
 	"github.com/AcroManiac/micropic/internal/adapters/logger"
@@ -40,8 +46,9 @@ func main() {
 }
 
 type appObjects struct {
-	cache interfaces.Cache
-	//rpc
+	cache      interfaces.Cache
+	lsnr       net.Listener
+	grpcServer *grpc.Server
 }
 
 func (app *appObjects) Init() {
@@ -51,21 +58,37 @@ func (app *appObjects) Init() {
 		file.NewFileStorage(
 			viper.GetString("cache.dirname")))
 
-	// Create and start RPC object
-	//app.rpc =
-	//if app.rmq == nil {
-	//	logger.Fatal("failed creating gRPC server")
-	//}
+	// Create a gRPC Server with gRPC interceptor
+	app.grpcServer = grpc.NewServer()
+	grpcapi.RegisterCacheServer(app.grpcServer, grpcapi.NewCacheServerImpl(app.cache))
+
+	// Register reflection service on gRPC server
+	reflection.Register(app.grpcServer)
 }
 
 func (app *appObjects) Start() {
-	// Start RPC loop
-	//go app.rpc.Start()
-	//logger.Info("gRPC started successfully", "host", host)
+	// Create listener for gRPC server
+	var err error
+	app.lsnr, err = net.Listen("tcp", fmt.Sprintf("%s:%d",
+		viper.GetString("grpc.ip"),
+		viper.GetInt("grpc.port")))
+	if err != nil {
+		logger.Fatal("failed to listen tcp", "error", err)
+	}
+
+	// Listen gRPC server
+	logger.Info("Starting gRPC server...")
+	go func() {
+		if err := app.grpcServer.Serve(app.lsnr); err != nil {
+			logger.Fatal("error while starting gRPC server", "error", err)
+		}
+	}()
 }
 
 func (app *appObjects) Stop() {
-	// Stop gRPC gracefully
+	// Make gRPC server graceful shutdown
+	app.grpcServer.GracefulStop()
+
 	// Clear file cache
 	_ = app.cache.Clean()
 }
