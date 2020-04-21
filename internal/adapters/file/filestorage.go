@@ -5,8 +5,9 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/AcroManiac/micropic/internal/domain/interfaces"
 	"github.com/google/uuid"
+
+	"github.com/AcroManiac/micropic/internal/domain/interfaces"
 )
 
 // Storage implementation
