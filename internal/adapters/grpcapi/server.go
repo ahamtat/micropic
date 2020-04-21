@@ -32,14 +32,7 @@ func (s *CacheServerImpl) SavePreview(ctx context.Context, request *SavePreviewR
 	}
 
 	// Save preview in cache
-	err := s.cache.Save(&entities.Preview{
-		Params: &entities.PreviewParams{
-			Width:  int(request.Preview.Params.Width),
-			Height: int(request.Preview.Params.Height),
-			URL:    request.Preview.Params.Url,
-		},
-		Image: request.Preview.Image,
-	})
+	err := s.cache.Save(convertProtobufToPreview(request.Preview))
 	if err != nil {
 		err = errors.Wrap(err, "error saving preview in cache")
 		logger.Error(err.Error())
@@ -80,14 +73,7 @@ func (s *CacheServerImpl) GetPreview(ctx context.Context, request *GetPreviewReq
 	logger.Debug("GetPreview returned preview")
 	return &GetPreviewResponse{
 		Result: &GetPreviewResponse_Preview{
-			Preview: &Preview{
-				Params: &PreviewParams{
-					Url:    preview.Params.URL,
-					Width:  uint32(preview.Params.Width),
-					Height: uint32(preview.Params.Height),
-				},
-				Image: preview.Image,
-			},
+			Preview: convertPreviewToProtobuf(preview),
 		},
 	}, nil
 }
