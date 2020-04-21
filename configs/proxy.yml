@@ -1,6 +1,6 @@
 ---
 proxy:
-  host: ""
+  host: "0.0.0.0"
   port: 8080
 
 amqp:
@@ -9,6 +9,10 @@ amqp:
   password: "guest"
   host: "127.0.0.1"
   port: 5672
+
+grpc:
+  host: "127.0.0.1"
+  port: 9090
 
 log:
   file: ./proxy.log

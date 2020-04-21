@@ -6,6 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/AcroManiac/micropic/internal/adapters/grpcapi"
+
+	"github.com/AcroManiac/micropic/internal/domain/interfaces"
+
 	"github.com/AcroManiac/micropic/internal/adapters/broker"
 
 	"github.com/spf13/viper"
@@ -62,6 +66,7 @@ type appObjects struct {
 	ctx     context.Context
 	cancel  context.CancelFunc
 	manager *broker.Manager
+	cache   interfaces.CacheClient
 	rpc     *RMQRPC
 	proxy   *Server
 }
@@ -89,10 +94,16 @@ func (app *appObjects) Init() {
 		logger.Fatal("failed creating RabbitMQ RMQRPC object")
 	}
 
+	// Create cache client
+	app.cache = grpcapi.NewCacheClientImpl(
+		viper.GetString("grpc.host"),
+		viper.GetInt("grpc.port"))
+
 	// Create HTTP proxy server
 	app.proxy = NewServer(
 		viper.GetString("proxy.host"),
 		viper.GetInt("proxy.port"),
+		app.cache,
 		app.rpc)
 	if app.proxy == nil {
 		logger.Fatal("could not initialize HTTP server")

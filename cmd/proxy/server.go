@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/AcroManiac/micropic/internal/domain/interfaces"
+
 	"github.com/AcroManiac/micropic/internal/domain/entities"
 
 	"github.com/AcroManiac/micropic/internal/adapters/logger"
@@ -29,16 +31,18 @@ type Server struct {
 	port   int
 	router *gin.Engine
 	srv    *http.Server
+	cache  interfaces.CacheClient
 	rpc    *RMQRPC
 }
 
 // NewServer constructs and initializes REST server
-func NewServer(host string, port int, rpc *RMQRPC) *Server {
+func NewServer(host string, port int, cache interfaces.CacheClient, rpc *RMQRPC) *Server {
 	server := &Server{
 		host:   host,
 		port:   port,
 		router: gin.Default(),
 		srv:    nil,
+		cache:  cache,
 		rpc:    rpc,
 	}
 
@@ -67,51 +71,61 @@ func removeSlash(s string) string {
 // Test with:
 // curl -ki -X GET -H "Content-Type: image/jpeg" http://localhost:8080/fill/300/200/www.audubon.org/sites/default/files/a1_1902_16_barred-owl_sandra_rothenberg_kk.jpg
 func (s *Server) handlePreview(c *gin.Context) {
+	// Create params and request
+	params := &entities.PreviewParams{
+		Width:  convertString(c.Param("width")),
+		Height: convertString(c.Param("height")),
+		URL:    removeSlash(c.Param("imageUrl")),
+	}
 	request := &entities.Request{
-		Params: &entities.PreviewParams{
-			Width:  convertString(c.Param("width")),
-			Height: convertString(c.Param("height")),
-			URL:    removeSlash(c.Param("imageUrl")),
-		},
+		Params:  params,
 		Headers: c.Request.Header,
 	}
-	logger.Debug("Image params from incoming HTTP request", "request", request)
+	logger.Debug("Incoming request", "request", request)
 
-	// Extract filename
-	filename := request.Params.URL[strings.LastIndex(request.Params.URL, "/")+1:]
-
-	// Check preview cache for image
-
-	// Create RMQRPC context
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// Call previewer and wait for response
-	response, err := s.rpc.SendRequest(ctx, request)
+	// Check preview cache for image first
+	preview, err := s.cache.Get(params)
 	if err != nil {
-		logger.Error("previewer RMQRPC request failed", "error", err)
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-	if response.Status.Code != http.StatusOK {
-		logger.Error("proxying an error from HTTP source", "error", response.Status)
-		c.String(response.Status.Code, response.Status.Text)
-		return
+		logger.Error("cache request failed", "error", err)
+
+		logger.Debug("Proxying request to previewer")
+		// Create RMQRPC context
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		// Call previewer and wait for response
+		response, err := s.rpc.SendRequest(ctx, request)
+		if err != nil {
+			logger.Error("previewer RMQRPC request failed", "error", err)
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		if response.Status.Code != http.StatusOK {
+			logger.Error("error returned from HTTP source", "error", response.Status)
+			c.String(response.Status.Code, response.Status.Text)
+			return
+		}
+
+		// Get preview from previewer response
+		preview = response.Preview
 	}
 
 	// Decode preview from Base64
-	buffSize := base64.StdEncoding.DecodedLen(len(response.Preview.Image))
-	preview := make([]byte, buffSize)
-	_, err = base64.StdEncoding.Decode(preview, response.Preview.Image)
+	buffSize := base64.StdEncoding.DecodedLen(len(preview.Image))
+	decodedPreview := make([]byte, buffSize)
+	_, err = base64.StdEncoding.Decode(decodedPreview, preview.Image)
 	if err != nil {
 		logger.Error("error decoding Base64 to preview", "error", err)
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
+	// Extract filename
+	filename := request.Params.URL[strings.LastIndex(request.Params.URL, "/")+1:]
+
 	// Return preview file within HTTP response
-	reader := bytes.NewReader(preview)
-	contentLength := int64(len(preview))
+	reader := bytes.NewReader(decodedPreview)
+	contentLength := int64(len(decodedPreview))
 	contentType := "application/octet-stream"
 	extraHeaders := map[string]string{
 		"Content-Disposition": `attachment; filename="` + filename + `"`,
