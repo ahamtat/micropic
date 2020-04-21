@@ -22,7 +22,7 @@ func NewHTTPImageLoader() *HTTPImageLoader {
 // Load image from HTTP source with request params
 func (l *HTTPImageLoader) Load(request *entities.Request) ([]byte, *entities.Status) {
 	// Create HTTP request to image source
-	req, err := http.NewRequest("GET", "http://"+request.URL, nil)
+	req, err := http.NewRequest("GET", "http://"+request.Params.URL, nil)
 	if err != nil {
 		errText := "error allocating http request"
 		logger.Error(errText, "error", err)
@@ -43,13 +43,15 @@ func (l *HTTPImageLoader) Load(request *entities.Request) ([]byte, *entities.Sta
 	resp, err := client.Do(req)
 	if err != nil {
 		logger.Error("failed getting image from HTTP source",
-			"url", request.URL, "error", err)
+			"url", request.Params.URL, "error", err)
 		return nil, &entities.Status{
 			Code: resp.StatusCode,
 			Text: http.StatusText(resp.StatusCode),
 		}
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	// Read image from response
 	image, err := ioutil.ReadAll(resp.Body)

@@ -29,9 +29,7 @@ func StringToMessageType(s string) (key int, ok bool) {
 
 // Request data
 type Request struct {
-	Width   int                 `json:"width"`
-	Height  int                 `json:"height"`
-	URL     string              `json:"url,omitempty"`
+	Params  *PreviewParams      `json:"params"`
 	Headers map[string][]string `json:"headers,omitempty"`
 }
 
@@ -42,18 +40,8 @@ func (r Request) Type() int {
 
 // Response data
 type Response struct {
-	Preview  []byte `json:"preview,omitempty"`
-	Filename string `json:"filename,omitempty"`
-	Status   Status `json:"status"`
-}
-
-// NewResponse object constructor
-func NewResponse(preview []byte, filename string, status Status) *Response {
-	return &Response{
-		Preview:  preview,
-		Filename: filename,
-		Status:   status,
-	}
+	Preview *Preview `json:"preview,omitempty"`
+	Status  Status   `json:"status"`
 }
 
 // Type implementation for image source response

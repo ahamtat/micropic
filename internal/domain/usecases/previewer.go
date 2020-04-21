@@ -38,8 +38,14 @@ func (p *Previewer) Process(request *entities.Request, obj interface{}) {
 	// Load image from external source
 	srcImage, status := p.loader.Load(request)
 	if status.Code != http.StatusOK {
-		response := entities.NewResponse(srcImage, "", *status)
-		p.send(response, obj)
+		errResponse := &entities.Response{
+			Preview: &entities.Preview{
+				Params: request.Params,
+				Image:  []byte{},
+			},
+			Status: *status,
+		}
+		p.send(errResponse, obj)
 		return
 	}
 

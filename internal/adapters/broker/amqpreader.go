@@ -115,14 +115,16 @@ func (r AmqpReader) PrintMessage(message interfaces.Message) {
 	response, ok := message.(*entities.Response)
 	if ok {
 		respCopy := &entities.Response{
-			Preview: func(p []byte) []byte {
-				if p != nil {
-					return []byte("Some Base64 code ;)")
-				}
-				return nil
-			}(response.Preview),
-			Filename: response.Filename,
-			Status:   response.Status,
+			Preview: &entities.Preview{
+				Params: response.Preview.Params,
+				Image: func(p []byte) []byte {
+					if p != nil {
+						return []byte("Some Base64 code ;)")
+					}
+					return nil
+				}(response.Preview.Image),
+			},
+			Status: response.Status,
 		}
 		logger.Debug("Response from previewer", "response", respCopy)
 		return

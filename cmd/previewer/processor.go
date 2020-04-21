@@ -6,7 +6,6 @@ import (
 	"image"
 	"image/jpeg"
 	"net/http"
-	"strings"
 
 	"github.com/muesli/smartcrop/nfnt"
 
@@ -27,10 +26,12 @@ func NewImageProcessor(quality int) *ImageProcessor {
 	return &ImageProcessor{quality: quality}
 }
 
-func errorResponse(filename, errText string) *entities.Response {
+func errorResponse(request *entities.Request, errText string) *entities.Response {
 	return &entities.Response{
-		Preview:  nil,
-		Filename: filename,
+		Preview: &entities.Preview{
+			Params: request.Params,
+			Image:  []byte{},
+		},
 		Status: entities.Status{
 			Code: http.StatusInternalServerError,
 			Text: errText,
@@ -45,24 +46,21 @@ type subImager interface {
 // Process source image with params in request and
 // return preview in Base64 format or error status
 func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *entities.Response {
-	// Extract filename
-	filename := request.URL[strings.LastIndex(request.URL, "/")+1:]
-
 	// Decode image
 	img, format, err := image.Decode(bytes.NewReader(srcImage))
 	if err != nil {
 		logger.Error("error decoding source image", "error", err)
-		return errorResponse(filename, err.Error())
+		return errorResponse(request, err.Error())
 	}
-	logger.Debug("Source image decoded successfully", "filename", filename, "format", format)
+	logger.Debug("Source image decoded successfully", "format", format)
 
 	// Make preview cropping from decoded image
 	resizer := nfnt.NewDefaultResizer()
 	analyzer := smartcrop.NewAnalyzer(resizer)
-	cropArea, err := analyzer.FindBestCrop(img, request.Width, request.Height)
+	cropArea, err := analyzer.FindBestCrop(img, request.Params.Width, request.Params.Height)
 	if err != nil {
 		logger.Error("failed searching best crop area", "error", err)
-		return errorResponse(filename, err.Error())
+		return errorResponse(request, err.Error())
 	}
 	logger.Debug("Best crop", "area", cropArea)
 
@@ -71,14 +69,14 @@ func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *en
 	if !ok {
 		errText := "failed cropping preview subimage"
 		logger.Error(errText)
-		return errorResponse(filename, errText)
+		return errorResponse(request, errText)
 	}
 	croppedImage := si.SubImage(cropArea)
 	logger.Debug("Cropped image dimensions",
 		"width", croppedImage.Bounds().Dx(), "height", croppedImage.Bounds().Dy())
 
 	// Resize image to fit requested params
-	resizedImage := resizer.Resize(croppedImage, uint(request.Width), uint(request.Height))
+	resizedImage := resizer.Resize(croppedImage, uint(request.Params.Width), uint(request.Params.Height))
 
 	// In-memory buffer to store JPEG image before we Base64 encode it
 	var buff bytes.Buffer
@@ -87,7 +85,7 @@ func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *en
 	// In previous example we encoded to a file, this time to a temp buffer
 	if err := jpeg.Encode(&buff, resizedImage, &jpeg.Options{Quality: p.quality}); err != nil {
 		logger.Error("failed encoding preview to JPEG", "error", err)
-		return errorResponse(filename, err.Error())
+		return errorResponse(request, err.Error())
 	}
 
 	// Encode the bytes in the buffer to a base64 string
@@ -97,8 +95,10 @@ func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *en
 
 	// Preview made successfully
 	return &entities.Response{
-		Preview:  preview,
-		Filename: filename,
+		Preview: &entities.Preview{
+			Params: request.Params,
+			Image:  preview,
+		},
 		Status: entities.Status{
 			Code: http.StatusOK,
 			Text: http.StatusText(http.StatusOK),

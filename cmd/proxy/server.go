@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/AcroManiac/micropic/internal/domain/entities"
@@ -67,12 +68,17 @@ func removeSlash(s string) string {
 // curl -ki -X GET -H "Content-Type: image/jpeg" http://localhost:8080/fill/300/200/www.audubon.org/sites/default/files/a1_1902_16_barred-owl_sandra_rothenberg_kk.jpg
 func (s *Server) handlePreview(c *gin.Context) {
 	request := &entities.Request{
-		Width:   convertString(c.Param("width")),
-		Height:  convertString(c.Param("height")),
-		URL:     removeSlash(c.Param("imageUrl")),
+		Params: &entities.PreviewParams{
+			Width:  convertString(c.Param("width")),
+			Height: convertString(c.Param("height")),
+			URL:    removeSlash(c.Param("imageUrl")),
+		},
 		Headers: c.Request.Header,
 	}
 	logger.Debug("Image params from incoming HTTP request", "request", request)
+
+	// Extract filename
+	filename := request.Params.URL[strings.LastIndex(request.Params.URL, "/")+1:]
 
 	// Check preview cache for image
 
@@ -94,9 +100,9 @@ func (s *Server) handlePreview(c *gin.Context) {
 	}
 
 	// Decode preview from Base64
-	buffSize := base64.StdEncoding.DecodedLen(len(response.Preview))
+	buffSize := base64.StdEncoding.DecodedLen(len(response.Preview.Image))
 	preview := make([]byte, buffSize)
-	_, err = base64.StdEncoding.Decode(preview, response.Preview)
+	_, err = base64.StdEncoding.Decode(preview, response.Preview.Image)
 	if err != nil {
 		logger.Error("error decoding Base64 to preview", "error", err)
 		c.Status(http.StatusInternalServerError)
@@ -108,7 +114,7 @@ func (s *Server) handlePreview(c *gin.Context) {
 	contentLength := int64(len(preview))
 	contentType := "application/octet-stream"
 	extraHeaders := map[string]string{
-		"Content-Disposition": `attachment; filename="` + response.Filename + `"`,
+		"Content-Disposition": `attachment; filename="` + filename + `"`,
 	}
 	c.DataFromReader(http.StatusOK, contentLength, contentType, reader, extraHeaders)
 }
