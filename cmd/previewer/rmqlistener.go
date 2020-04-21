@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 
+	"github.com/AcroManiac/micropic/internal/adapters/grpcapi"
+
 	"github.com/AcroManiac/micropic/internal/domain/interfaces"
 	"github.com/AcroManiac/micropic/internal/domain/usecases"
 
@@ -22,7 +24,7 @@ type RMQListener struct {
 	previewer *usecases.Previewer
 }
 
-func NewRMQListener(conn *amqp.Connection, quality int) *RMQListener {
+func NewRMQListener(conn *amqp.Connection, quality int, grpcHost string, grpcPort int) *RMQListener {
 	// Create cancel context
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -34,7 +36,8 @@ func NewRMQListener(conn *amqp.Connection, quality int) *RMQListener {
 		NewImageProcessor(quality),
 		[]interfaces.Sender{
 			NewRMQSender(out),
-			NewCacheSender(),
+			NewCacheSender(
+				grpcapi.NewCacheClientImpl(grpcHost, grpcPort)),
 		})
 
 	return &RMQListener{

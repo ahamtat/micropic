@@ -2,16 +2,22 @@ package interfaces
 
 import "github.com/AcroManiac/micropic/internal/domain/entities"
 
-// Cache interface
-type Cache interface {
-	// HasPreview searches preview in cache
-	HasPreview(params *entities.PreviewParams) bool
-
+// CacheClient interface
+type CacheClient interface {
 	// Save preview to cache
 	Save(preview *entities.Preview) error
 
 	// Get preview from cache
 	Get(params *entities.PreviewParams) (*entities.Preview, error)
+}
+
+// Cache interface
+type Cache interface {
+	// CacheClient interface included
+	CacheClient
+
+	// HasPreview searches preview in cache
+	HasPreview(params *entities.PreviewParams) bool
 
 	// Evict cache item
 	Evict() error

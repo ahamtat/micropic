@@ -38,6 +38,10 @@ func errorResponse(filename, errText string) *entities.Response {
 	}
 }
 
+type subImager interface {
+	SubImage(image.Rectangle) image.Image
+}
+
 // Process source image with params in request and
 // return preview in Base64 format or error status
 func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *entities.Response {
@@ -63,9 +67,6 @@ func (p *ImageProcessor) Process(srcImage []byte, request *entities.Request) *en
 	logger.Debug("Best crop", "area", cropArea)
 
 	// Crop image with requested aspect ratio
-	type subImager interface {
-		SubImage(image.Rectangle) image.Image
-	}
 	si, ok := img.(subImager)
 	if !ok {
 		errText := "failed cropping preview subimage"

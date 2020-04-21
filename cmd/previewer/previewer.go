@@ -83,7 +83,10 @@ func (app *appObjects) Init() {
 	logger.Info("RabbitMQ broker connected", "host", viper.GetString("amqp.host"))
 
 	// Create and start RPC object
-	app.rmq = NewRMQListener(app.manager.Conn, viper.GetInt("previewer.quality"))
+	app.rmq = NewRMQListener(app.manager.Conn,
+		viper.GetInt("previewer.quality"),
+		viper.GetString("grpc.host"),
+		viper.GetInt("grpc.port"))
 	if app.rmq == nil {
 		logger.Fatal("failed creating RabbitMQ server")
 	}
