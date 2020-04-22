@@ -24,22 +24,22 @@ func NewFileStorage(dirName string) interfaces.Storage {
 	return &Storage{dirName: dirName}
 }
 
-func (s Storage) createPath(hash uint64) string {
-	return fmt.Sprintf("%s/%d", s.dirName, hash)
+func (s Storage) createPath(hash string) string {
+	return fmt.Sprintf("%s/%s", s.dirName, hash)
 }
 
 // Save data with hash key
-func (s *Storage) Save(hash uint64, data []byte) error {
+func (s *Storage) Save(hash string, data []byte) error {
 	return ioutil.WriteFile(s.createPath(hash), data, os.ModePerm)
 }
 
 // Get stored data for hash key
-func (s *Storage) Get(hash uint64) ([]byte, error) {
+func (s *Storage) Get(hash string) ([]byte, error) {
 	return ioutil.ReadFile(s.createPath(hash))
 }
 
 // Remove stored data by hash key
-func (s *Storage) Remove(hash uint64) error {
+func (s *Storage) Remove(hash string) error {
 	return os.Remove(s.createPath(hash))
 }
 

@@ -29,13 +29,13 @@ type Cache interface {
 // Storage interface
 type Storage interface {
 	// Save data with hash key
-	Save(hash uint64, data []byte) error
+	Save(hash string, data []byte) error
 
 	// Get stored data for hash key
-	Get(hash uint64) ([]byte, error)
+	Get(hash string) ([]byte, error)
 
 	// Remove stored data by hash key
-	Remove(hash uint64) error
+	Remove(hash string) error
 
 	// Remove all data from storage
 	Clean() error

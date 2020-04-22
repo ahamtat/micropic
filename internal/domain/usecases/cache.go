@@ -1,8 +1,9 @@
 package usecases
 
 import (
+	"crypto/md5" // nolint:gosec
+	"encoding/hex"
 	"fmt"
-	"hash/maphash"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -17,7 +18,7 @@ type LRUCache struct {
 	size        int
 	storage     interfaces.Storage
 	mx          sync.RWMutex
-	hashItemMap map[uint64]*dllItem
+	hashItemMap map[string]*dllItem
 	paramsList  doublyLinkedList
 }
 
@@ -27,7 +28,7 @@ func NewLRUCache(size int, storage interfaces.Storage) interfaces.Cache {
 		size:        size,
 		storage:     storage,
 		mx:          sync.RWMutex{},
-		hashItemMap: make(map[uint64]*dllItem),
+		hashItemMap: make(map[string]*dllItem),
 		paramsList:  doublyLinkedList{},
 	}
 }
@@ -117,18 +118,13 @@ func (c *LRUCache) Evict() error {
 
 // Clean cache totally
 func (c *LRUCache) Clean() error {
-	c.hashItemMap = make(map[uint64]*dllItem)
+	c.hashItemMap = make(map[string]*dllItem)
 	c.paramsList.Clean()
 	return c.storage.Clean()
 }
 
 // createHash creates hash key from preview params
-func createHash(params *entities.PreviewParams) uint64 {
-	// The zero Hash value is valid and ready to use; setting an
-	// initial seed is not necessary.
-	var h maphash.Hash
-
-	// Add a string to the hash, and return the current hash value.
-	_, _ = h.WriteString(fmt.Sprintf("%d/%d/%s", params.Width, params.Height, params.URL))
-	return h.Sum64()
+func createHash(params *entities.PreviewParams) string {
+	hash := md5.Sum([]byte(fmt.Sprintf("%d/%d/%s", params.Width, params.Height, params.URL))) // nolint:gosec
+	return hex.EncodeToString(hash[:])
 }
