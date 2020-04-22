@@ -70,7 +70,7 @@ func removeSlash(s string) string {
 // Get preview from microservices
 // Test with:
 // curl -ki -X GET -H "Content-Type: image/jpeg" http://localhost:8080/fill/300/200/www.audubon.org/sites/default/files/a1_1902_16_barred-owl_sandra_rothenberg_kk.jpg
-func (s *Server) handlePreview(c *gin.Context) {
+func (s *Server) handlePreview(c *gin.Context) { // nolint:funlen
 	// Create params and request
 	params := &entities.PreviewParams{
 		Width:  convertString(c.Param("width")),
@@ -85,6 +85,7 @@ func (s *Server) handlePreview(c *gin.Context) {
 
 	// Check preview cache for image first
 	preview, err := s.cache.Get(params)
+	service := "cache"
 	if err != nil {
 		logger.Error("cache request failed", "error", err)
 
@@ -107,8 +108,9 @@ func (s *Server) handlePreview(c *gin.Context) {
 		}
 
 		// Get preview from previewer response
-		preview = response.Preview
+		preview, service = response.Preview, "previewer"
 	}
+	logger.Debug("Found preview in " + service)
 
 	// Decode preview from Base64
 	buffSize := base64.StdEncoding.DecodedLen(len(preview.Image))

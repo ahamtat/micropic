@@ -22,7 +22,7 @@ func NewCacheServerImpl(cache interfaces.Cache) CacheServer {
 
 // SavePreview gRPC call handler saves preview in the internal cache
 func (s *CacheServerImpl) SavePreview(ctx context.Context, request *SavePreviewRequest) (*SavePreviewResponse, error) {
-	logger.Debug("Incoming SavePreview request", "request", request.String())
+	logger.Debug("Incoming SavePreview request", "request", request.Preview.Params)
 
 	// Check input params
 	if request == nil {
