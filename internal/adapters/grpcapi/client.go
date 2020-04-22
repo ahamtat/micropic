@@ -66,6 +66,7 @@ func (c *CacheClientImpl) Get(params *entities.PreviewParams) (*entities.Preview
 	})
 	if err != nil {
 		logger.Error("error getting preview from cache", "error", err)
+		return nil, err
 	}
 
 	// Check response for errors
