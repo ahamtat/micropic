@@ -15,15 +15,13 @@ gen:
 .PHONY: build
 build:
 	@echo "  >  Building microservices binaries & Docker images"
-	@env GOOS=linux GOARCH=amd64 go build -mod=mod -o $(GOBIN)/cache        $(GOBASE)/cmd/cache/*.go
-	@env GOOS=linux GOARCH=amd64 go build -mod=mod -o $(GOBIN)/previewer	$(GOBASE)/cmd/previewer/*.go
-	@env GOOS=linux GOARCH=amd64 go build -mod=mod -o $(GOBIN)/proxy		$(GOBASE)/cmd/proxy/*.go
+	@docker build -t deployments_builder:latest		-f $(GOBASE)/build/package/builder/Dockerfile .
 	@docker build -t deployments_cache:latest 		-f $(GOBASE)/build/package/cache/Dockerfile .
 	@docker build -t deployments_previewer:latest	-f $(GOBASE)/build/package/previewer/Dockerfile .
 	@docker build -t deployments_proxy:latest		-f $(GOBASE)/build/package/proxy/Dockerfile .
 
 .PHONY: run
-run: build
+run:
 	@echo "  >  Starting microservices"
 	@docker-compose -f deployments/docker-compose.yml up -d
 

@@ -32,7 +32,7 @@ services:
     build:
       context: ./
       dockerfile: ../build/package/cache/Dockerfile
-    restart: on-failure
+#    restart: on-failure
     ports:
       - "50051:50051"
     expose:

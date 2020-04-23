@@ -1,5 +1,6 @@
 # Build docker image for application
 FROM alpine:latest
+LABEL maintainer="artem.orlov@gmail.com"
 
 RUN apk update && apk upgrade \
     && apk add ca-certificates && update-ca-certificates \
@@ -18,5 +19,6 @@ ENV TZ=Europe/Moscow
 # Clean APK cache
 RUN rm -rf /var/cache/apk/*
 
-COPY ./build/bin/previewer /bin/previewer
+ENV GOPATH /go
+COPY --from=deployments_builder:latest $GOPATH/src/github.com/AcroManiac/micropic/bin/previewer /bin
 CMD ["dockerize", "-wait", "tcp://rabbitmq:15672", "-timeout", "10s", "-wait-retry-interval", "5s", "/bin/previewer"]

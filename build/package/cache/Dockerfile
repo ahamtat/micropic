@@ -1,5 +1,6 @@
 # Build docker image for application
 FROM alpine:latest
+LABEL maintainer="artem.orlov@gmail.com"
 
 RUN apk update && apk upgrade
 
@@ -10,6 +11,7 @@ ENV TZ=Europe/Moscow
 # Clean APK cache
 RUN rm -rf /var/cache/apk/*
 
-COPY ./build/bin/cache /bin/cache
+ENV GOPATH /go
+COPY --from=deployments_builder:latest $GOPATH/src/github.com/AcroManiac/micropic/bin/cache /bin
 EXPOSE 50051
 ENTRYPOINT ["/bin/cache"]
