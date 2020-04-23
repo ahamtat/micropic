@@ -27,14 +27,14 @@
   "global_parameters": [
     {
       "name": "cluster_name",
-      "value": "otus-homework@fd2be0bb70ef"
+      "value": "micropic@fd2be0bb70ef"
     }
   ],
   "policies": [],
   "queues": [],
   "exchanges": [
     {
-      "name": "otus.homework",
+      "name": "micropic",
       "vhost": "/",
       "type": "topic",
       "durable": true,

@@ -4,14 +4,7 @@ services:
 
   # Integration tests
   integration_tests:
-    build: ../build/package/tests
-    depends_on:
-      - postgres
-      - rabbitmq
-      - api
-    links:
-      - api
+    build:
+      context: ./
+      dockerfile: ../build/package/test/Dockerfile
     restart: on-failure
-    networks:
-      - postgres
-      - rabbitmq
