@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+
+  # Integration tests
+  integration_tests:
+    build: ../build/package/tests
+    depends_on:
+      - postgres
+      - rabbitmq
+      - api
+    links:
+      - api
+    restart: on-failure
+    networks:
+      - postgres
+      - rabbitmq

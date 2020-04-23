@@ -1,0 +1,101 @@
+version: "3"
+
+networks:
+  postgres:
+    driver: bridge
+  rabbitmq:
+    driver: bridge
+  monitor:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:12.2
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    env_file:
+      - infrastructure.env
+    environment:
+      - TZ=Europe/Moscow
+    volumes:
+      - ../migrations/db_scheme.sql:/docker-entrypoint-initdb.d/db_scheme.sql:ro
+    networks:
+      - postgres
+
+  rabbitmq:
+    image: rabbitmq:3.8.3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    expose:
+      - 15672
+    volumes:
+      - ./rabbitmq.def.json:/etc/rabbitmq/definitions.json:ro
+      - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
+    networks:
+      - rabbitmq
+
+  builder:
+    build: ../build/package/builder
+
+  # Calendar API service
+  api:
+    build: ../build/package/api
+    depends_on:
+      - builder
+      - postgres
+    restart: on-failure
+    ports:
+      - "8888:8888"
+      - "9100:9100"
+    expose:
+      - 8888
+    env_file:
+      - infrastructure.env
+    # Application specific environment variables
+    environment:
+      GRPC_IP: "0.0.0.0"
+      GRPC_PORT: 8888
+      MONITOR_PORT: 9100
+    networks:
+      - postgres
+      - monitor
+
+  # Calendar Scheduler service
+  scheduler:
+    build: ../build/package/scheduler
+    depends_on:
+      - builder
+      - postgres
+      - rabbitmq
+    restart: on-failure
+    env_file:
+      - infrastructure.env
+    # Application specific environment variables
+    environment:
+      APP_SCHEDULER: 10s
+      APP_CLEANER: 60s
+      APP_RETENTION: 8760h
+    networks:
+      - postgres
+      - rabbitmq
+
+  # Calendar Sender service
+  sender:
+    build: ../build/package/sender
+    depends_on:
+      - builder
+      - scheduler
+    restart: on-failure
+    ports:
+      - "9102:9102"
+    env_file:
+      - infrastructure.env
+    environment:
+      MONITOR_PORT: 9102
+    networks:
+      - postgres
+      - rabbitmq
+      - monitor
