@@ -33,6 +33,6 @@ Feature: Image source
   Scenario: Preview size is correct
     When I make a "GET" request to "http://localhost:8080/fill/50/50/imagesource/_gopher_original_1024x504.jpg"
     Then I get a "200" response
-    And preview size has params:
+    And preview size is:
       | Width  | 50 |
       | Height | 50 |
