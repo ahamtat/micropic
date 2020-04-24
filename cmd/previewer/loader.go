@@ -44,6 +44,12 @@ func (l *HTTPImageLoader) Load(request *entities.Request) ([]byte, *entities.Sta
 	if err != nil {
 		logger.Error("failed getting image from HTTP source",
 			"url", request.Params.URL, "error", err)
+		if resp == nil {
+			return nil, &entities.Status{
+				Code: http.StatusServiceUnavailable,
+				Text: http.StatusText(http.StatusServiceUnavailable),
+			}
+		}
 		return nil, &entities.Status{
 			Code: resp.StatusCode,
 			Text: http.StatusText(resp.StatusCode),
