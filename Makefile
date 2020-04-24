@@ -29,10 +29,10 @@ run:
 test:
 	@echo "  >  Making integration tests"
 	set -e ; \
-	docker-compose -f deployments/docker-compose.yml -f deployments/docker-compose.test.yml up --build -d ; \
+	docker-compose -f deployments/docker-compose.test.yml up --build -d ; \
 	sleep 10 ; \
 	exitCode=0 ; \
-	docker-compose -f deployments/docker-compose.yml -f deployments/docker-compose.test.yml \
+	docker-compose -f deployments/docker-compose.test.yml \
 		run -e CGO_ENABLED=0 -e GOOS=linux integration_tests go test || exitCode=$$? ; \
 	docker-compose -f deployments/docker-compose.test.yml down ; \
 	exit $$exitCode
