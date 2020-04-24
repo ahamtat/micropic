@@ -30,7 +30,6 @@ run:
 test:
 	@echo "  >  Making integration tests"
 	set -e ; \
-	docker-compose -f deployments/docker-compose.test.yml up --build -d ; \
 	sleep 10 ; \
 	exitCode=0 ; \
 	docker-compose -f deployments/docker-compose.test.yml \
