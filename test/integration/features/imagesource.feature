@@ -2,18 +2,37 @@
 Feature: Image source
   As HTTP proxy for multiple microservices
   In order to understand that previewer receives and processes images correctly
-  I want to receive response and check its status
+  I want to receive response and check it
 
   Scenario: Image source is not available
-    Given Connection to Calendar API on "api:8888"
-    And There is the event:
-    """
-		{
-			"title": "Event 1",
-			"description": "Data for testing microservices",
-			"owner": "Artem",
-			"startTime": "2020-04-02T12:03:00+03:00"
-		}
-	"""
-    When I send AddEvent request
-    Then response should have event
+    When I make a "GET" request to "http://localhost:8080/fill/50/50/imagesource.not/_gopher_original_1024x504.jpg"
+    Then I get a "503" response
+    And the proxy response has details:
+      | Body | Service Unavailable |
+
+  Scenario: Image not found
+    When I make a "GET" request to "http://localhost:8080/fill/50/50/imagesource/_gopher_not_found.jpg"
+    Then I get a "404" response
+
+  Scenario: Wrong image
+    When I make a "GET" request to "http://localhost:8080/fill/50/50/imagesource/_gopher_not_image.jpg"
+    Then I get a "500" response
+    And the proxy response has details:
+      | Body | image: unknown format |
+
+  Scenario: Image source returns error
+    When I make a "GET" request to "http://localhost:8080/fill/50/50/imagesource/_gopher_not_found.jpg"
+    Then I get a "404" response
+
+  Scenario: Image source returns image
+    When I make a "GET" request to "http://localhost:8080/fill/50/50/imagesource/_gopher_original_1024x504.jpg"
+    Then I get a "200" response
+    And the proxy response has details:
+      | Header | Test-Previewlocation | previewer |
+
+  Scenario: Preview size is correct
+    When I make a "GET" request to "http://localhost:8080/fill/50/50/imagesource/_gopher_original_1024x504.jpg"
+    Then I get a "200" response
+    And preview size has params:
+      | Width  | 50 |
+      | Height | 50 |
