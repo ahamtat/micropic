@@ -46,6 +46,12 @@ func (c *LRUCache) HasPreview(params *entities.PreviewParams) bool {
 
 // Save preview to cache
 func (c *LRUCache) Save(preview *entities.Preview) error {
+	// Check preview in cache
+	if c.HasPreview(preview.Params) {
+		// Preview is in cache already. No need to save it
+		return nil
+	}
+
 	// Push preview params to doubly linked list
 	item := c.paramsList.PushHead(preview.Params)
 	if c.paramsList.GetLength() > c.size {
