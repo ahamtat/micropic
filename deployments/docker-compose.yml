@@ -1,9 +1,5 @@
 version: "3"
 
-networks:
-  rabbitmq:
-    driver: bridge
-
 services:
 
   rabbitmq:
@@ -16,12 +12,9 @@ services:
     volumes:
       - ./rabbitmq/rabbitmq.def.json:/etc/rabbitmq/definitions.json:ro
       - ./rabbitmq/rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
-    networks:
-      - rabbitmq
 
   imagesource:
     image: flashspys/nginx-static
-    container_name: imagesource
     ports:
       - 80:80
     volumes:
@@ -32,7 +25,7 @@ services:
     build:
       context: ./
       dockerfile: ../build/package/cache/Dockerfile
-#    restart: on-failure
+    restart: on-failure
     ports:
       - "50051:50051"
     expose:
@@ -41,6 +34,7 @@ services:
       - infrastructure.env
     # Application specific environment variables
     environment:
+      GRPC_HOST: 0.0.0.0
       CACHE_DIRNAME: "./cachedir"
       CACHE_SIZE: 10
 
@@ -57,8 +51,7 @@ services:
     # Application specific environment variables
     environment:
       PREVIEWER_QUALITY: 70
-    networks:
-      - rabbitmq
+      GRPC_HOST: cache
 
   # HTTP proxy
   proxy:
@@ -70,5 +63,5 @@ services:
       - "8080:8080"
     env_file:
       - infrastructure.env
-    networks:
-      - rabbitmq
+    environment:
+      GRPC_HOST: cache
