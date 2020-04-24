@@ -110,6 +110,7 @@ func (s *Server) handlePreview(c *gin.Context) { // nolint:funlen
 		// Get preview from previewer response
 		preview, service = response.Preview, "previewer"
 	}
+	c.Header("Test-PreviewLocation", service)
 	logger.Debug("Found preview in " + service)
 
 	// Decode preview from Base64
