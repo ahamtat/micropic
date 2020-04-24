@@ -19,6 +19,7 @@ build:
 	@docker build -t deployments_cache:latest 		-f $(GOBASE)/build/package/cache/Dockerfile .
 	@docker build -t deployments_previewer:latest	-f $(GOBASE)/build/package/previewer/Dockerfile .
 	@docker build -t deployments_proxy:latest		-f $(GOBASE)/build/package/proxy/Dockerfile .
+	@docker build -t deployments_test:latest		-f $(GOBASE)/build/package/test/Dockerfile .
 
 .PHONY: run
 run:
@@ -29,12 +30,12 @@ run:
 test:
 	@echo "  >  Making integration tests"
 	set -e ; \
-	docker-compose -f deployments/docker-compose.yml -f deployments/docker-compose.test.yml up --build -d ; \
+	docker-compose -f deployments/docker-compose.test.yml up --build -d ; \
 	sleep 10 ; \
 	exitCode=0 ; \
-	docker-compose -f deployments/docker-compose.yml -f deployments/docker-compose.test.yml \
+	docker-compose -f deployments/docker-compose.test.yml \
 		run -e CGO_ENABLED=0 -e GOOS=linux integration_tests go test || exitCode=$$? ; \
-	docker-compose -f deployments/docker-compose.yml -f deployments/docker-compose.test.yml down ; \
+	docker-compose -f deployments/docker-compose.test.yml down ; \
 	exit $$exitCode
 
 .PHONY: down

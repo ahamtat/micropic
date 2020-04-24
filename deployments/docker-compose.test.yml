@@ -7,4 +7,3 @@ services:
     build:
       context: ./
       dockerfile: ../build/package/test/Dockerfile
-    restart: on-failure
