@@ -28,7 +28,7 @@ run:
 .PHONY: test
 test:
 	@echo "  >  Making integration tests"
-	set -e ; \
+	@set -e ; \
 	docker-compose -f deployments/docker-compose.test.yml up --build -d ; \
 	sleep 10 ; \
 	exitCode=0 ; \
@@ -44,7 +44,5 @@ down:
 
 .PHONY: clean
 clean:
-	@echo "  >  Cleaning built binaries and code cache"
-	@rm -fR $(GOBIN)
-	@rm -fR $(GOBASE)/logs
-    @env GOPATH=$(GOPATH) GOBIN=$(GOBIN) go clean
+	@echo "  >  Cleaning microservice Docker images"
+	@IMAGES="$(shell docker images --filter=reference='*deployments_*' -q)"; docker rmi $$IMAGES
