@@ -18,7 +18,7 @@ jobs:
       - go/test:
           covermode: atomic
           failfast: true
-          count: 5
+          count: '5'
           race: true
 
 # Orchestrate or schedule a set of jobs
