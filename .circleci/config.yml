@@ -3,11 +3,26 @@ version: 2.1
 # Use a package of configuration called an orb.
 orbs:
   # Declare a dependency on the welcome-orb
-  welcome: circleci/welcome-orb@0.4.1
+  go: circleci/go@1.1.1
+
+jobs:
+  build:
+    executor:
+      name: go/default
+      tag: '1.14'
+    steps:
+      - checkout
+#      - go/load-cache
+      - go/mod-download
+#      - go/save-cache
+      - go/test:
+          covermode: atomic
+          failfast: true
+          count: 5
+          race: true
+
 # Orchestrate or schedule a set of jobs
 workflows:
-  # Name the workflow "welcome"
-  welcome:
-    # Run the welcome/run job in its own container
+  main:
     jobs:
-      - welcome/run
+      - build
