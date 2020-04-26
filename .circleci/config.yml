@@ -35,5 +35,5 @@ workflows:
   main:
     jobs:
       - lint
-#      - test
-#      - build
+      - test
+      - build
