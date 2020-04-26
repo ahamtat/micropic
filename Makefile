@@ -46,3 +46,22 @@ down:
 clean:
 	@echo "  >  Cleaning microservice Docker images"
 	@IMAGES="$(shell docker images --filter=reference='*deployments_*' -q)"; docker rmi $$IMAGES
+
+.PHONY: ci-build
+ci-build:
+	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -mod=mod -o $(GOBIN)/cache		$(GOBASE)/cmd/cache/*.go
+	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -mod=mod -o $(GOBIN)/previewer	$(GOBASE)/cmd/previewer/*.go
+	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -mod=mod -o $(GOBIN)/proxy		$(GOBASE)/cmd/proxy/*.go
+
+.PHONY: ci-test
+ci-test:
+	@go test -mod=mod $(GOBASE)/internal/domain/usecases/...
+
+.PHONY: ci-lint
+ci-lint:
+	@golangci-lint run ./...
+
+.PHONY: ci-clean
+ci-clean:
+	@-rm -fR $(GOBIN)
+    @GOPATH=$(GOPATH) GOBIN=$(GOBIN) go clean
