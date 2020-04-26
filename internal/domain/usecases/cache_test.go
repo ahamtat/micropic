@@ -1,8 +1,10 @@
-package usecases
+package usecases_test
 
 import (
 	"sync"
 	"testing"
+
+	"github.com/AcroManiac/micropic/internal/domain/usecases"
 
 	"github.com/AcroManiac/micropic/internal/domain/interfaces"
 	"github.com/pkg/errors"
@@ -57,7 +59,7 @@ var testData = []struct {
 }
 
 func createAndFillCache(t *testing.T, size int) interfaces.Cache {
-	cache := NewLRUCache(size, NewMemoryStorage())
+	cache := usecases.NewLRUCache(size, NewMemoryStorage())
 
 	// Save previews to cache
 	for i := 0; i < size; i++ {
@@ -122,7 +124,7 @@ type MemoryStorage struct {
 	data map[string][]byte
 }
 
-// NewMemoryStorage constructor
+// NewMemoryStorage constructor.
 func NewMemoryStorage() interfaces.Storage {
 	return &MemoryStorage{
 		mx:   sync.RWMutex{},
@@ -130,7 +132,7 @@ func NewMemoryStorage() interfaces.Storage {
 	}
 }
 
-// Save data in memory by hash key
+// Save data in memory by hash key.
 func (s *MemoryStorage) Save(hash string, data []byte) error {
 	s.mx.Lock()
 	defer s.mx.Unlock()
@@ -138,7 +140,7 @@ func (s *MemoryStorage) Save(hash string, data []byte) error {
 	return nil
 }
 
-// Get stored data by hash key
+// Get stored data by hash key.
 func (s *MemoryStorage) Get(hash string) ([]byte, error) {
 	s.mx.RLock()
 	defer s.mx.RUnlock()
@@ -149,7 +151,7 @@ func (s *MemoryStorage) Get(hash string) ([]byte, error) {
 	return data, nil
 }
 
-// Remove data from storage
+// Remove data from storage.
 func (s *MemoryStorage) Remove(hash string) error {
 	s.mx.Lock()
 	defer s.mx.Unlock()
@@ -157,7 +159,7 @@ func (s *MemoryStorage) Remove(hash string) error {
 	return nil
 }
 
-// Clean storage
+// Clean storage.
 func (s *MemoryStorage) Clean() error {
 	s.mx.Lock()
 	defer s.mx.Unlock()

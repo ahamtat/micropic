@@ -4,37 +4,37 @@ import (
 	"sync"
 )
 
-type dllItem struct {
+type DllItem struct {
 	Value interface{}
-	Next  *dllItem
-	Prev  *dllItem
+	Next  *DllItem
+	Prev  *DllItem
 }
 
-type doublyLinkedList struct {
+type DoublyLinkedList struct {
 	mx     sync.Mutex
-	head   *dllItem
-	tail   *dllItem
-	length int
+	head   *DllItem
+	Tail   *DllItem
+	Length int
 }
 
-func (l *doublyLinkedList) GetHead() *dllItem {
+func (l *DoublyLinkedList) GetHead() *DllItem {
 	l.mx.Lock()
 	defer l.mx.Unlock()
 	return l.head
 }
 
-func (l *doublyLinkedList) GetLength() int {
+func (l *DoublyLinkedList) GetLength() int {
 	l.mx.Lock()
 	defer l.mx.Unlock()
-	return l.length
+	return l.Length
 }
 
-// Push value to the head of doubly linked list
-func (l *doublyLinkedList) PushHead(v interface{}) *dllItem {
+// Push value to the head of doubly linked list.
+func (l *DoublyLinkedList) PushHead(v interface{}) *DllItem {
 	l.mx.Lock()
 	defer l.mx.Unlock()
 
-	i := &dllItem{
+	i := &DllItem{
 		Value: v,
 		Next:  l.head,
 	}
@@ -42,16 +42,16 @@ func (l *doublyLinkedList) PushHead(v interface{}) *dllItem {
 		l.head.Prev = i
 	} else {
 		// First item in list
-		l.tail = i
+		l.Tail = i
 	}
 	l.head = i
-	l.length++
+	l.Length++
 
 	return i
 }
 
-// Move item to the head of doubly linked list
-func (l *doublyLinkedList) MoveHead(i *dllItem) {
+// Move item to the head of doubly linked list.
+func (l *DoublyLinkedList) MoveHead(i *DllItem) {
 	l.mx.Lock()
 	defer l.mx.Unlock()
 
@@ -67,21 +67,21 @@ func (l *doublyLinkedList) MoveHead(i *dllItem) {
 	l.head = i
 }
 
-// Remove tail item and return its value
-func (l *doublyLinkedList) PopTail() interface{} {
+// Remove tail item and return its value.
+func (l *DoublyLinkedList) PopTail() interface{} {
 	l.mx.Lock()
 	defer l.mx.Unlock()
 
-	params := l.tail.Value
-	if l.tail.Prev != nil {
-		l.tail.Prev.Next = nil
+	params := l.Tail.Value
+	if l.Tail.Prev != nil {
+		l.Tail.Prev.Next = nil
 	}
-	l.length--
+	l.Length--
 
 	return params
 }
 
-func (l *doublyLinkedList) Clean() {
+func (l *DoublyLinkedList) Clean() {
 	for l.GetLength() != 0 {
 		_ = l.PopTail()
 	}

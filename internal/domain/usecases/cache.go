@@ -18,22 +18,22 @@ type LRUCache struct {
 	size        int
 	storage     interfaces.Storage
 	mx          sync.RWMutex
-	hashItemMap map[string]*dllItem
-	paramsList  doublyLinkedList
+	hashItemMap map[string]*DllItem
+	paramsList  DoublyLinkedList
 }
 
-// NewLRUCache constructor
+// NewLRUCache constructor.
 func NewLRUCache(size int, storage interfaces.Storage) interfaces.Cache {
 	return &LRUCache{
 		size:        size,
 		storage:     storage,
 		mx:          sync.RWMutex{},
-		hashItemMap: make(map[string]*dllItem),
-		paramsList:  doublyLinkedList{},
+		hashItemMap: make(map[string]*DllItem),
+		paramsList:  DoublyLinkedList{},
 	}
 }
 
-// HasPreview searches preview in cache
+// HasPreview searches preview in cache.
 func (c *LRUCache) HasPreview(params *entities.PreviewParams) bool {
 	// Evaluate hash key from preview params
 	hash := createHash(params)
@@ -44,7 +44,7 @@ func (c *LRUCache) HasPreview(params *entities.PreviewParams) bool {
 	return ok
 }
 
-// Save preview to cache
+// Save preview to cache.
 func (c *LRUCache) Save(preview *entities.Preview) error {
 	// Check preview in cache
 	if c.HasPreview(preview.Params) {
@@ -71,7 +71,7 @@ func (c *LRUCache) Save(preview *entities.Preview) error {
 	return c.storage.Save(hash, preview.Image)
 }
 
-// Get preview from cache
+// Get preview from cache.
 func (c *LRUCache) Get(params *entities.PreviewParams) (*entities.Preview, error) {
 	// Evaluate hash key from preview params
 	hash := createHash(params)
@@ -100,7 +100,7 @@ func (c *LRUCache) Get(params *entities.PreviewParams) (*entities.Preview, error
 	}, nil
 }
 
-// Evict cache item
+// Evict cache item.
 func (c *LRUCache) Evict() error {
 	// Get LRU item
 	evictedItem := c.paramsList.PopTail()
@@ -122,14 +122,14 @@ func (c *LRUCache) Evict() error {
 	return c.storage.Remove(hash)
 }
 
-// Clean cache totally
+// Clean cache totally.
 func (c *LRUCache) Clean() error {
-	c.hashItemMap = make(map[string]*dllItem)
+	c.hashItemMap = make(map[string]*DllItem)
 	c.paramsList.Clean()
 	return c.storage.Clean()
 }
 
-// createHash creates hash key from preview params
+// createHash creates hash key from preview params.
 func createHash(params *entities.PreviewParams) string {
 	hash := md5.Sum([]byte(fmt.Sprintf("%d/%d/%s", params.Width, params.Height, params.URL))) // nolint:gosec
 	return hex.EncodeToString(hash[:])
