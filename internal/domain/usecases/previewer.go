@@ -14,7 +14,7 @@ type Previewer struct {
 	senders   []interfaces.Sender
 }
 
-// NewPreviewer constructor
+// NewPreviewer constructor.
 func NewPreviewer(
 	loader interfaces.ImageLoader,
 	processor interfaces.ImageProcessor,
@@ -33,7 +33,7 @@ func (p *Previewer) send(response *entities.Response, obj interface{}) {
 	}
 }
 
-// Process proxy request to preview response
+// Process proxy request to preview response.
 func (p *Previewer) Process(request *entities.Request, obj interface{}) {
 	// Load image from external source
 	srcImage, status := p.loader.Load(request)

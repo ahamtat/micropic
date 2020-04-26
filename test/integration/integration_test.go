@@ -1,4 +1,4 @@
-package main
+package main // nolint:testpackage
 
 import (
 	"bytes"
@@ -49,7 +49,7 @@ func FeatureContext(s *godog.Suite) {
 	s.BeforeScenario(func(*messages.Pickle) {
 		// clean the state before every scenario
 		if resp != nil {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 		}
 	})
 }

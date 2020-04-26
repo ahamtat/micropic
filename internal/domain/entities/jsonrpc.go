@@ -10,12 +10,12 @@ var messageTypeText = map[int]string{
 	PreviewerResponse: "Response from previewer",
 }
 
-// MessageTypeToString convert from integer value
+// MessageTypeToString convert from integer value.
 func MessageTypeToString(t int) string {
 	return messageTypeText[t]
 }
 
-// StringToMessageType convert from string
+// StringToMessageType convert from string.
 func StringToMessageType(s string) (key int, ok bool) {
 	for k, v := range messageTypeText {
 		if v == s {
@@ -33,7 +33,7 @@ type Request struct {
 	Headers map[string][]string `json:"headers,omitempty"`
 }
 
-// Type implementation for HTTP request proxying
+// Type implementation for HTTP request proxying.
 func (r Request) Type() int {
 	return ProxyingRequest
 }
@@ -44,7 +44,7 @@ type Response struct {
 	Status  Status   `json:"status"`
 }
 
-// Type implementation for image source response
+// Type implementation for image source response.
 func (r Response) Type() int {
 	return PreviewerResponse
 }

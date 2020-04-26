@@ -8,6 +8,7 @@ require (
 	github.com/cucumber/messages-go/v10 v10.0.3
 	github.com/gin-gonic/gin v1.6.2
 	github.com/golang/protobuf v1.4.0
+	github.com/golangci/golangci-lint v1.25.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/muesli/smartcrop v0.3.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
