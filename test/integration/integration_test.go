@@ -2,6 +2,8 @@ package main // nolint:testpackage
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/pkg/errors"
 	"image"
 	_ "image/jpeg"
 	"io/ioutil"
@@ -9,8 +11,6 @@ import (
 	"os"
 	"strconv"
 	"testing"
-
-	"github.com/pkg/errors"
 
 	"github.com/cucumber/godog"
 	"github.com/cucumber/messages-go/v10"
@@ -97,6 +97,8 @@ func previewSizeIs(arg1 *messages.PickleStepArgument_PickleTable) error {
 func theResponseHeadersHas(arg1 *messages.PickleStepArgument_PickleTable) error {
 	key := arg1.Rows[0].Cells[0].Value
 	value := arg1.Rows[0].Cells[1].Value
+	fmt.Printf("key: %s, value: %s\n", key, value)
+	fmt.Printf("Response header: %+v\n", resp.Header)
 	if resp.Header.Get(key) != value {
 		return errors.New("response header is wrong")
 	}
