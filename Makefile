@@ -55,7 +55,7 @@ ci-build:
 
 .PHONY: ci-test
 ci-test:
-	@go test -mod=mod $(GOBASE)/internal/domain/usecases/...
+	@go test -mod=mod -race -count 100 $(GOBASE)/internal/domain/usecases/...
 
 .PHONY: ci-lint
 ci-lint:
