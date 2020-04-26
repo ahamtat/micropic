@@ -3,7 +3,6 @@ package main // nolint:testpackage
 import (
 	"bytes"
 	"fmt"
-	"github.com/pkg/errors"
 	"image"
 	_ "image/jpeg"
 	"io/ioutil"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/pkg/errors"
 
 	"github.com/cucumber/godog"
 	"github.com/cucumber/messages-go/v10"
