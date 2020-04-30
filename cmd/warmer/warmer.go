@@ -37,6 +37,8 @@ var Usage = func() {
 }
 
 func main() {
+	start := time.Now()
+
 	flag.Usage = Usage
 	flag.Parse()
 
@@ -89,6 +91,9 @@ func main() {
 
 	wg.Wait()
 	close(urlChan)
+
+	elapsed := time.Since(start)
+	logger.Info(fmt.Sprintf("Application working time is %s", elapsed))
 }
 
 var sizes = []string{

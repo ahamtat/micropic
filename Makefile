@@ -65,3 +65,13 @@ ci-lint:
 ci-clean:
 	@-rm -fR $(GOBIN)
     @GOPATH=$(GOPATH) GOBIN=$(GOBIN) go clean
+
+.PHONY: scale-up
+scale-up:
+	@echo "  >  Scaling previewers up"
+	@docker-compose -f deployments/docker-compose.yml scale previewer=5
+
+.PHONY: scale-down
+scale-down:
+	@echo "  >  Downscaling previewers"
+	@docker-compose -f deployments/docker-compose.yml scale previewer=1
