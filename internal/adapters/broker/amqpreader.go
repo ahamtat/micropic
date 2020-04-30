@@ -35,7 +35,7 @@ func NewAmqpReader(ctx context.Context, conn *amqp.Connection, queueName, routin
 		ch.Que.Name, // queue
 		"",          // consumer
 		true,        // auto ack
-		true,        // exclusive
+		false,       // exclusive
 		false,       // no local
 		false,       // no wait
 		nil,         // args
