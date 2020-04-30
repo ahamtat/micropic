@@ -3,11 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -39,15 +41,45 @@ func main() {
 	flag.Parse()
 
 	// Get image URLs from external image source
+	var wg sync.WaitGroup
 	urlChan := make(chan string, flagWorkers)
-	go func() {
-		for i := 0; i < flagNumber; i++ {
-			url, err := getRandomDogURL()
-			if err != nil {
-				logger.Error("failed calling external image source", "error", err)
-				continue
+	for w := 0; w < flagWorkers; w++ {
+		go func() {
+			for i := 0; i < flagNumber; i++ {
+				wg.Add(1)
+				url, err := getRandomDogURL()
+				if err != nil {
+					logger.Error("failed calling external image source", "error", err)
+					continue
+				}
+				urlChan <- url
 			}
-			urlChan <- url
+		}()
+	}
+
+	// Get preview from HTTP proxy
+	// This warms up preview cache
+	go func() {
+		for url := range urlChan {
+			go func(url string) {
+				defer wg.Done()
+				urlconv := convertProxyURL(url)
+				resp, err := http.Get(urlconv) // nolint:gosec
+				if err != nil || resp == nil {
+					logger.Error("error calling preview proxy", "error", err, "response", resp)
+					return
+				}
+				defer resp.Body.Close()
+
+				if resp.StatusCode == 200 {
+					logger.Debug("preview returned successfully")
+				} else {
+					body, _ := ioutil.ReadAll(resp.Body)
+					logger.Error("returned error response",
+						"code", resp.StatusCode,
+						"body", body)
+				}
+			}(url)
 		}
 	}()
 
@@ -55,29 +87,8 @@ func main() {
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	for {
-		select {
-		case <-done:
-			logger.Error("program interrupted by user or OS")
-			close(urlChan)
-			os.Exit(0)
-		case url := <-urlChan:
-			go func(url string) {
-				urlconv := convertProxyURL(url)
-
-				// Get preview from HTTP proxy
-				// This warms up preview cache
-				resp, err := http.Get(urlconv) // nolint:gosec
-				if err != nil {
-					logger.Error("error calling preview proxy", "error", err, "response", resp)
-					return
-				}
-
-				logger.Debug("preview returned successfully")
-				_ = resp.Body.Close()
-			}(url)
-		}
-	}
+	wg.Wait()
+	close(urlChan)
 }
 
 var sizes = []string{

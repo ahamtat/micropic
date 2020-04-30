@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -32,6 +33,9 @@ func getRandomDogURL() (string, error) {
 	err = json.Unmarshal(body, &message)
 	if err != nil {
 		return "", errors.Wrap(err, "failed unmarshalling JSON message")
+	}
+	if message.Status != "success" {
+		return "", errors.New(fmt.Sprintf("result is not success: %+v", message))
 	}
 
 	return message.Message, nil
