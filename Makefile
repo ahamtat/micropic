@@ -5,6 +5,9 @@ GOBASE := $(shell pwd)
 GOPATH := $(GOBASE)/vendor:$(GOBASE)
 GOBIN := $(GOBASE)/build/bin
 
+RELEASE := 1.0.0
+HUBNAME := artemorlov
+
 .PHONY: gen
 gen:
 	@echo "  >  Generating code on specifications"
@@ -15,10 +18,17 @@ gen:
 .PHONY: build
 build:
 	@echo "  >  Building microservices binaries & Docker images"
-	@docker build -t deployments_builder:latest		-f $(GOBASE)/build/package/builder/Dockerfile .
-	@docker build -t deployments_cache:latest 		-f $(GOBASE)/build/package/cache/Dockerfile .
-	@docker build -t deployments_previewer:latest	-f $(GOBASE)/build/package/previewer/Dockerfile .
-	@docker build -t deployments_proxy:latest		-f $(GOBASE)/build/package/proxy/Dockerfile .
+	@docker build -t builder							-f $(GOBASE)/build/package/builder/Dockerfile .
+	@docker build -t $(HUBNAME)/cache:$(RELEASE)		-f $(GOBASE)/build/package/cache/Dockerfile .
+	@docker build -t $(HUBNAME)/previewer:$(RELEASE)	-f $(GOBASE)/build/package/previewer/Dockerfile .
+	@docker build -t $(HUBNAME)/proxy:$(RELEASE) 		-f $(GOBASE)/build/package/proxy/Dockerfile .
+
+.PHONY: push
+push: build
+	@echo "  >  Pushing images to DockerHub"
+	@docker push $(HUBNAME)/cache:$(RELEASE)
+	@docker push $(HUBNAME)/previewer:$(RELEASE)
+	@docker push $(HUBNAME)/proxy:$(RELEASE)
 
 .PHONY: run
 run:
@@ -45,7 +55,8 @@ down:
 .PHONY: clean
 clean:
 	@echo "  >  Cleaning microservice Docker images"
-	@IMAGES="$(shell docker images --filter=reference='*deployments_*' -q)"; docker rmi $$IMAGES
+	@IMAGES="$(shell docker images --filter=reference='*$(HUBNAME)*' -q)"; docker rmi $$IMAGES
+	docker rmi developments_builder
 
 .PHONY: ci-build
 ci-build:

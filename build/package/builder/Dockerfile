@@ -1,5 +1,5 @@
 # Build applications from sources
-FROM golang:alpine
+FROM golang:alpine AS builder
 LABEL maintainer="artem.orlov@gmail.com"
 
 # Update packages and install dependecies
