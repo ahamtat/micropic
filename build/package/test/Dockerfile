@@ -1,5 +1,5 @@
 # Build docker image for micropic integration tests
-FROM deployments_builder:latest
+FROM builder
 LABEL maintainer="artem.orlov@gmail.com"
 
 RUN apk update && apk upgrade \

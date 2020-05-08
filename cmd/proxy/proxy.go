@@ -69,6 +69,7 @@ type appObjects struct {
 	cache   interfaces.CacheClient
 	rpc     *RMQRPC
 	proxy   *Server
+	chk     *application.HealthChecker
 }
 
 func (app *appObjects) Init() {
@@ -108,6 +109,9 @@ func (app *appObjects) Init() {
 	if app.proxy == nil {
 		logger.Fatal("could not initialize HTTP server")
 	}
+
+	// Add health check routes for Kubernetes
+	app.chk = application.NewHealthChecker(app.proxy.router)
 }
 
 func (app *appObjects) Start() {
@@ -124,6 +128,9 @@ func (app *appObjects) Start() {
 			logger.Fatal("could not start HTTP server", "error", err)
 		}
 	}()
+
+	// Set application ready flag
+	app.chk.SetReady()
 }
 
 func (app *appObjects) Stop() {

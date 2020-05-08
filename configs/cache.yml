@@ -10,3 +10,6 @@ grpc:
 log:
   file: ./cache.log
   level: debug
+
+health:
+  port: 8000

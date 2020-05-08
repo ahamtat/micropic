@@ -20,5 +20,5 @@ ENV TZ=Europe/Moscow
 RUN rm -rf /var/cache/apk/*
 
 ENV GOPATH /go
-COPY --from=deployments_builder:latest $GOPATH/src/github.com/AcroManiac/micropic/bin/previewer /bin
+COPY --from=builder $GOPATH/src/github.com/AcroManiac/micropic/bin/previewer /bin
 CMD ["dockerize", "-wait", "tcp://rabbitmq:15672", "-timeout", "10s", "-wait-retry-interval", "5s", "/bin/previewer"]

@@ -22,6 +22,7 @@ services:
 
   # Preview cache
   cache:
+    image: artemorlov/cache:1.0.0
     build:
       context: ./
       dockerfile: ../build/package/cache/Dockerfile
@@ -37,9 +38,11 @@ services:
       GRPC_HOST: 0.0.0.0
       CACHE_DIRNAME: "./cachedir"
       CACHE_SIZE: 10
+      HEALTH_PORT: 8000
 
   # Previewer
   previewer:
+    image: artemorlov/previewer:1.0.0
     build:
       context: ./
       dockerfile: ../build/package/previewer/Dockerfile
@@ -55,6 +58,7 @@ services:
 
   # HTTP proxy
   proxy:
+    image: artemorlov/proxy:1.0.0
     build:
       context: ./
       dockerfile: ../build/package/proxy/Dockerfile

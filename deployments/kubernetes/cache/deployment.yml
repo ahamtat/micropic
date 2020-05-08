@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache # DEPLOYMENT_NAME
+  # we pass selector, to easy list specific Deployments:
+  # kubectl get deployment --selector=KEY_DEPLOYMENT_SELECTOR
+  labels:
+    app: cache # KEY_DEPLOYMENT_SELECTOR: VALUE_DEPLOYMENT_SELECTOR
+spec:
+  replicas: 1 # NUMBER_OF_REPLICAS (number of Pods)
+  selector:
+    matchLabels:
+      # thanks to this selector, we specify, which Pods belong to this Deployment
+      app: cache # KEY_POD_SELECTOR: VALUE_POD_SELECTOR
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 1
+  template: # here the Pod specification starts
+    metadata:
+      labels:
+        # all Pods will get this label
+        # so Deployment will easily find all his Pods
+        app: cache # KEY_POD_SELECTOR: VALUE_POD_SELECTOR
+    spec:
+      containers:
+        - name: cache # CONTAINER_NAME
+          image: artemorlov/cache:1.0.0 # IMAGE_NAME
+          ports:
+            - containerPort: 50051 # CONTAINER_PORT_NUMBER - port to expose on the Pod's IP address
+            - containerPort: 8000
+          env:
+            - name: GRPC_HOST
+              value: "0.0.0.0"
+            - name: GRPC_PORT
+              value: "50051"
+            - name: CACHE_DIRNAME
+              value: "./cachedir"
+            - name: CACHE_SIZE
+              value: "10"
+            - name: LOG_LEVEL
+              value: "debug"
+            - name: HEALTH_PORT
+              value: "8000"
+          imagePullPolicy: IfNotPresent # options: Always, Never, IfNotPresent;
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+          resources:
+            limits:
+              cpu: 10m
+              memory: 30Mi
+            requests:
+              cpu: 10m
+              memory: 30Mi
+      terminationGracePeriodSeconds: 30

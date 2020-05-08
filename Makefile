@@ -5,6 +5,9 @@ GOBASE := $(shell pwd)
 GOPATH := $(GOBASE)/vendor:$(GOBASE)
 GOBIN := $(GOBASE)/build/bin
 
+RELEASE := 1.0.0
+HUBNAME := artemorlov
+
 .PHONY: gen
 gen:
 	@echo "  >  Generating code on specifications"
@@ -15,10 +18,10 @@ gen:
 .PHONY: build
 build:
 	@echo "  >  Building microservices binaries & Docker images"
-	@docker build -t deployments_builder:latest		-f $(GOBASE)/build/package/builder/Dockerfile .
-	@docker build -t deployments_cache:latest 		-f $(GOBASE)/build/package/cache/Dockerfile .
-	@docker build -t deployments_previewer:latest	-f $(GOBASE)/build/package/previewer/Dockerfile .
-	@docker build -t deployments_proxy:latest		-f $(GOBASE)/build/package/proxy/Dockerfile .
+	@docker build -t builder							-f $(GOBASE)/build/package/builder/Dockerfile .
+	@docker build -t $(HUBNAME)/cache:$(RELEASE)		-f $(GOBASE)/build/package/cache/Dockerfile .
+	@docker build -t $(HUBNAME)/previewer:$(RELEASE)	-f $(GOBASE)/build/package/previewer/Dockerfile .
+	@docker build -t $(HUBNAME)/proxy:$(RELEASE) 		-f $(GOBASE)/build/package/proxy/Dockerfile .
 
 .PHONY: run
 run:
@@ -45,7 +48,8 @@ down:
 .PHONY: clean
 clean:
 	@echo "  >  Cleaning microservice Docker images"
-	@IMAGES="$(shell docker images --filter=reference='*deployments_*' -q)"; docker rmi $$IMAGES
+	@IMAGES="$(shell docker images --filter=reference='*$(HUBNAME)/*' -q)"; docker rmi $$IMAGES
+	docker rmi builder
 
 .PHONY: ci-build
 ci-build:
@@ -75,3 +79,19 @@ scale-up:
 scale-down:
 	@echo "  >  Downscaling previewers"
 	@docker-compose -f deployments/docker-compose.yml scale previewer=1
+
+.PHONY: push
+push: build
+	@echo "  >  Pushing images to DockerHub"
+	@docker push $(HUBNAME)/cache:$(RELEASE)
+	@docker push $(HUBNAME)/previewer:$(RELEASE)
+	@docker push $(HUBNAME)/proxy:$(RELEASE)
+
+.PHONY: kube-up
+kube-up:
+	@echo "  >  Starting services in kubernetes"
+	@minikube start
+	@minikube addons enable ingress
+	@kubectl config use-context minikube
+	@kubectl apply -f deployments/kubernetes/cache/deployment.yml
+	@kubectl apply -f deployments/kubernetes/cache/service.yml
