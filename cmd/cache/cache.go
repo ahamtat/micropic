@@ -49,6 +49,7 @@ type appObjects struct {
 	cache      interfaces.Cache
 	lsnr       net.Listener
 	grpcServer *grpc.Server
+	hltServer  *application.HealthCheckerServer
 }
 
 func (app *appObjects) Init() {
@@ -64,6 +65,9 @@ func (app *appObjects) Init() {
 
 	// Register reflection service on gRPC server
 	reflection.Register(app.grpcServer)
+
+	// Create health checking server
+	app.hltServer = application.NewHealthCheckerServer(viper.GetInt("health.port"))
 }
 
 func (app *appObjects) Start() {
@@ -83,6 +87,15 @@ func (app *appObjects) Start() {
 			logger.Fatal("error while starting gRPC server", "error", err)
 		}
 	}()
+
+	// Start health checking server
+	go func() {
+		if err := app.hltServer.Start(); err != nil {
+			logger.Error("error starting HealthCheck server", "error", err)
+			return
+		}
+	}()
+	app.hltServer.Chk.SetReady()
 }
 
 func (app *appObjects) Stop() {
@@ -91,4 +104,9 @@ func (app *appObjects) Stop() {
 
 	// Clear file cache
 	_ = app.cache.Clean()
+
+	// Stop health checking server
+	if err := app.hltServer.Stop(); err != nil {
+		logger.Error("error stopping HealthCheck server", "error", err)
+	}
 }

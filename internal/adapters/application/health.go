@@ -63,17 +63,20 @@ func (hc *HealthChecker) handleReady(ctx *gin.Context) {
 
 // HealthCheckerServer structure.
 type HealthCheckerServer struct {
-	chk  *HealthChecker
+	Chk  *HealthChecker
 	port int
 	srv  *http.Server
 }
 
 // NewHealthCheckerServer constructor.
 func NewHealthCheckerServer(port int) *HealthCheckerServer {
+	// Turn off debug noise
+	gin.SetMode(gin.ReleaseMode)
+
 	chk := NewHealthChecker(nil)
 	chk.port = port
 	return &HealthCheckerServer{
-		chk:  chk,
+		Chk:  chk,
 		port: port,
 		srv:  nil,
 	}
@@ -83,7 +86,7 @@ func NewHealthCheckerServer(port int) *HealthCheckerServer {
 func (s *HealthCheckerServer) Start() error {
 	s.srv = &http.Server{
 		Addr:    fmt.Sprintf(":%d", s.port),
-		Handler: s.chk.router,
+		Handler: s.Chk.router,
 	}
 
 	if err := s.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
