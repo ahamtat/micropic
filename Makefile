@@ -48,8 +48,8 @@ down:
 .PHONY: clean
 clean:
 	@echo "  >  Cleaning microservice Docker images"
-	@IMAGES="$(shell docker images --filter=reference='*$(HUBNAME)*' -q)"; docker rmi $$IMAGES
-	docker rmi developments_builder
+	@IMAGES="$(shell docker images --filter=reference='*$(HUBNAME)/*' -q)"; docker rmi $$IMAGES
+	docker rmi builder
 
 .PHONY: ci-build
 ci-build:
