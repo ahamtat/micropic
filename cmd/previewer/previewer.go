@@ -63,6 +63,7 @@ type appObjects struct {
 	cancel  context.CancelFunc
 	manager *broker.Manager
 	rmq     *RMQListener
+	hServer *application.HealthCheckerServer
 }
 
 func (app *appObjects) Init() {
@@ -90,6 +91,9 @@ func (app *appObjects) Init() {
 	if app.rmq == nil {
 		logger.Fatal("failed creating RabbitMQ server")
 	}
+
+	// Create health checking server for Kubernetes
+	app.hServer = application.NewHealthCheckerServer(viper.GetInt("health.port"))
 }
 
 func (app *appObjects) Start() {
@@ -99,6 +103,16 @@ func (app *appObjects) Start() {
 
 	// Start broker connection listener
 	go app.manager.ConnectionListener(app.ctx)
+
+	// Start health checking server
+	logger.Info("Starting HealthCheck server...", "port", viper.GetInt("health.port"))
+	go func() {
+		if err := app.hServer.Start(); err != nil {
+			logger.Error("error starting HealthCheck server", "error", err)
+			return
+		}
+	}()
+	app.hServer.Chk.SetReady()
 }
 
 func (app *appObjects) Stop() {
@@ -107,5 +121,10 @@ func (app *appObjects) Stop() {
 	app.rmq.Stop()
 	if err := app.manager.Close(); err != nil {
 		logger.Error("failed stopping RabbitMQ connection", "error", err)
+	}
+
+	// Stop health checking server
+	if err := app.hServer.Stop(); err != nil {
+		logger.Error("error stopping HealthCheck server", "error", err)
 	}
 }
