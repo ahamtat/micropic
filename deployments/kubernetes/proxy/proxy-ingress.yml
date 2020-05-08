@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: proxy-ingress-name # INGRESS_NAME
+  labels:
+    # we pass selector, to easy list specific Ingresses:
+    # kubectl get ing --selector=KEY_INGRESS_SELECTOR
+    app: proxy # KEY_INGRESS_SELECTOR: VALUE_INGRESS_SELECTOR
+  annotations: {}
+  # you can apply additional annotations here, to enable cors for example
+  # all example annotations (kubernetes/ingress-nginx controller) you can find here:
+  # https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
+spec:
+  rules:
+    - host: micropic.otus # HOST_NAME
+      http:
+        paths:
+          - path: / # path for the host
+            backend:
+              # thanks to this section, we specify,
+              # to which Service the Ingress should forward the traffic
+              serviceName: proxy-service-name # SERVICE_NAME
+              servicePort: 8080 # SERVICE_PORT
