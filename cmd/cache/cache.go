@@ -89,6 +89,7 @@ func (app *appObjects) Start() {
 	}()
 
 	// Start health checking server
+	logger.Info("Starting HealthCheck server...", "port", viper.GetInt("health.port"))
 	go func() {
 		if err := app.hltServer.Start(); err != nil {
 			logger.Error("error starting HealthCheck server", "error", err)
