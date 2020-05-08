@@ -19,5 +19,5 @@ spec:
             backend:
               # thanks to this section, we specify,
               # to which Service the Ingress should forward the traffic
-              serviceName: proxy-service-name # SERVICE_NAME
+              serviceName: proxy # SERVICE_NAME
               servicePort: 8080 # SERVICE_PORT

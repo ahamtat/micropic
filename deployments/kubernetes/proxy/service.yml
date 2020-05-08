@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: proxy-service-name # SERVICE_NAME
+  name: proxy # SERVICE_NAME
   labels:
     # we pass selector, to list specific Services:
     # kubectl get svc --selector=KEY_SERVICE_SELECTOR
@@ -13,7 +13,7 @@ spec:
     # to which Pods the Service should forward the traffic
     app: proxy # KEY_POD_SELECTOR: VALUE_POD_SELECTOR
   ports:
-    - name: service-port # name of this port within the Service
+    - name: service-port-proxy # name of this port within the Service
       protocol: TCP # optional, TCP is set by default, others: UDP, SCTP
       port: 8080 # SERVICE_PORT - port exposed by this service
       # Pod's port number (Pod is targeted by the Service)

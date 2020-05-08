@@ -17,3 +17,6 @@ grpc:
 log:
   file: ./proxy.log
   level: debug
+
+health:
+  port: 8000

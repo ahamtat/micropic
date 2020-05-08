@@ -16,3 +16,6 @@ grpc:
 log:
   file: ./previewer.log
   level: debug
+
+health:
+  port: 8000

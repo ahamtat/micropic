@@ -29,6 +29,28 @@ spec:
           image: artemorlov/proxy:1.0.0 # IMAGE_NAME
           ports:
             - containerPort: 8080 # CONTAINER_PORT_NUMBER - port to expose on the Pod's IP address
+            - containerPort: 8000
+          env:
+            - name: PROXY_HOST
+              value: "0.0.0.0"
+            - name: PROXY_PORT
+              value: "8080"
+            - name: GRPC_PORT
+              value: "50051"
+            - name: AMQP_PROTOCOL
+              value: "amqp"
+            - name: AMQP_USER
+              value: "guest"
+            - name: AMQP_PASSWORD
+              value: "guest"
+            - name: AMQP_HOST
+              value: "rabbitmq"
+            - name: AMQP_PORT
+              value: "5672"
+            - name: LOG_LEVEL
+              value: "debug"
+            - name: HEALTH_PORT
+              value: "8000"
           imagePullPolicy: IfNotPresent # options: Always, Never, IfNotPresent;
           livenessProbe:
             httpGet:

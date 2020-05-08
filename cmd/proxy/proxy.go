@@ -69,7 +69,7 @@ type appObjects struct {
 	cache   interfaces.CacheClient
 	rpc     *RMQRPC
 	proxy   *Server
-	chk     *application.HealthChecker
+	hServer *application.HealthCheckerServer
 }
 
 func (app *appObjects) Init() {
@@ -110,8 +110,8 @@ func (app *appObjects) Init() {
 		logger.Fatal("could not initialize HTTP server")
 	}
 
-	// Add health check routes for Kubernetes
-	app.chk = application.NewHealthChecker(app.proxy.router)
+	// Create health checking server for Kubernetes
+	app.hServer = application.NewHealthCheckerServer(viper.GetInt("health.port"))
 }
 
 func (app *appObjects) Start() {
@@ -129,8 +129,15 @@ func (app *appObjects) Start() {
 		}
 	}()
 
-	// Set application ready flag
-	app.chk.SetReady()
+	// Start health checking server
+	logger.Info("Starting HealthCheck server...", "port", viper.GetInt("health.port"))
+	go func() {
+		if err := app.hServer.Start(); err != nil {
+			logger.Error("error starting HealthCheck server", "error", err)
+			return
+		}
+	}()
+	app.hServer.Chk.SetReady()
 }
 
 func (app *appObjects) Stop() {
@@ -144,5 +151,10 @@ func (app *appObjects) Stop() {
 	app.rpc.Stop()
 	if err := app.manager.Close(); err != nil {
 		logger.Error("failed stopping RabbitMQ connection", "error", err)
+	}
+
+	// Stop health checking server
+	if err := app.hServer.Stop(); err != nil {
+		logger.Error("error stopping HealthCheck server", "error", err)
 	}
 }
