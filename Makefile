@@ -23,13 +23,6 @@ build:
 	@docker build -t $(HUBNAME)/previewer:$(RELEASE)	-f $(GOBASE)/build/package/previewer/Dockerfile .
 	@docker build -t $(HUBNAME)/proxy:$(RELEASE) 		-f $(GOBASE)/build/package/proxy/Dockerfile .
 
-.PHONY: push
-push: build
-	@echo "  >  Pushing images to DockerHub"
-	@docker push $(HUBNAME)/cache:$(RELEASE)
-	@docker push $(HUBNAME)/previewer:$(RELEASE)
-	@docker push $(HUBNAME)/proxy:$(RELEASE)
-
 .PHONY: run
 run:
 	@echo "  >  Starting microservices"
@@ -86,3 +79,19 @@ scale-up:
 scale-down:
 	@echo "  >  Downscaling previewers"
 	@docker-compose -f deployments/docker-compose.yml scale previewer=1
+
+.PHONY: push
+push: build
+	@echo "  >  Pushing images to DockerHub"
+	@docker push $(HUBNAME)/cache:$(RELEASE)
+	@docker push $(HUBNAME)/previewer:$(RELEASE)
+	@docker push $(HUBNAME)/proxy:$(RELEASE)
+
+.PHONY: kube-up
+kube-up:
+	@echo "  >  Starting services in kubernetes"
+	@minikube start
+	@minikube addons enable ingress
+	@kubectl config use-context minikube
+	@kubectl apply -f deployments/kubernetes/cache/deployment.yml
+	@kubectl apply -f deployments/kubernetes/cache/service.yml
