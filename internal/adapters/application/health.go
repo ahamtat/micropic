@@ -91,7 +91,7 @@ func (s *HealthCheckerServer) Start() error {
 		Handler: s.Chk.router,
 	}
 
-	logger.Debug("Starting HealthCheck server...", "port", s.port)
+	logger.Info("Starting HealthCheck server...", "port", s.port)
 	if err := s.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return errors.Wrap(err, "failed starting HTTP server")
 	}
