@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: proxy # DEPLOYMENT_NAME
+  name: previewer # DEPLOYMENT_NAME
   # we pass selector, to easy list specific Deployments:
   # kubectl get deployment --selector=KEY_DEPLOYMENT_SELECTOR
   labels:
-    app: proxy # KEY_DEPLOYMENT_SELECTOR: VALUE_DEPLOYMENT_SELECTOR
+    app: previewer # KEY_DEPLOYMENT_SELECTOR: VALUE_DEPLOYMENT_SELECTOR
 spec:
   replicas: 1 # NUMBER_OF_REPLICAS (number of Pods)
   selector:
     matchLabels:
       # thanks to this selector, we specify, which Pods belong to this Deployment
-      app: proxy # KEY_POD_SELECTOR: VALUE_POD_SELECTOR
+      app: previewer # KEY_POD_SELECTOR: VALUE_POD_SELECTOR
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -22,23 +22,18 @@ spec:
       labels:
         # all Pods will get this label
         # so Deployment will easily find all his Pods
-        app: proxy # KEY_POD_SELECTOR: VALUE_POD_SELECTOR
+        app: previewer # KEY_POD_SELECTOR: VALUE_POD_SELECTOR
     spec:
       containers:
-        - name: proxy # CONTAINER_NAME
-          image: artemorlov/proxy:1.0.0 # IMAGE_NAME
-          ports:
-            - containerPort: 8080 # CONTAINER_PORT_NUMBER - port to expose on the Pod's IP address
-            - containerPort: 8000
+        - name: previewer # CONTAINER_NAME
+          image: artemorlov/previewer:1.0.0 # IMAGE_NAME
           env:
-            - name: PROXY_HOST
-              value: "0.0.0.0"
-            - name: PROXY_PORT
-              value: "8080"
             - name: GRPC_HOST
               value: "cache"
             - name: GRPC_PORT
               value: "50051"
+            - name: PREVIEWER_QUALITY
+              value: "70"
             - name: AMQP_PROTOCOL
               value: "amqp"
             - name: AMQP_USER
@@ -57,11 +52,11 @@ spec:
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 8080
+              port: 8000
           readinessProbe:
             httpGet:
               path: /readyz
-              port: 8080
+              port: 8000
           resources:
             limits:
               cpu: 10m
