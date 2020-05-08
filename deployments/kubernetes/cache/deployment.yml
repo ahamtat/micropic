@@ -43,7 +43,7 @@ spec:
               value: "debug"
             - name: HEALTH_PORT
               value: "8000"
-          imagePullPolicy: Never # options: Always, Never, IfNotPresent;
+          imagePullPolicy: IfNotPresent # options: Always, Never, IfNotPresent;
           livenessProbe:
             httpGet:
               path: /healthz
