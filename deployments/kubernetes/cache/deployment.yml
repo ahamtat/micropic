@@ -29,6 +29,7 @@ spec:
           image: artemorlov/cache:1.0.0 # IMAGE_NAME
           ports:
             - containerPort: 50051 # CONTAINER_PORT_NUMBER - port to expose on the Pod's IP address
+            - containerPort: 8000
           env:
             - name: GRPC_HOST
               value: "0.0.0.0"
