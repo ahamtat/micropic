@@ -93,5 +93,14 @@ kube-up:
 	@minikube start
 	@minikube addons enable ingress
 	@kubectl config use-context minikube
+	@kubectl apply -f deployments/kubernetes/rabbitmq/secret.yml
+	@helm install rabbitmq bitnami/rabbitmq -f deployments/kubernetes/rabbitmq/values.yml --set rabbitmq.username=guest,rabbitmq.password=guest
 	@kubectl apply -f deployments/kubernetes/cache/deployment.yml
 	@kubectl apply -f deployments/kubernetes/cache/service.yml
+	@kubectl apply -f deployments/kubernetes/previewer/deployment.yml
+	@kubectl apply -f deployments/kubernetes/proxy/deployment.yml
+	@kubectl apply -f deployments/kubernetes/proxy/service.yml
+	@kubectl apply -f deployments/kubernetes/proxy/ingress.yml
+	@echo "Starting microservices in Kubernetes cluster. Please wait a minute..."
+	@sleep 60
+	@echo "Microservices are running"
