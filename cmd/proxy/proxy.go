@@ -104,6 +104,7 @@ func (app *appObjects) Init() {
 	app.proxy = NewServer(
 		viper.GetString("proxy.host"),
 		viper.GetInt("proxy.port"),
+		viper.GetInt("proxy.timeout"),
 		app.cache,
 		app.rpc)
 	if app.proxy == nil {

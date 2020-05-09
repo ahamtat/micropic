@@ -27,23 +27,25 @@ func init() {
 
 // Server structure
 type Server struct {
-	host   string
-	port   int
-	router *gin.Engine
-	srv    *http.Server
-	cache  interfaces.CacheClient
-	rpc    *RMQRPC
+	host    string
+	port    int
+	timeout int
+	router  *gin.Engine
+	srv     *http.Server
+	cache   interfaces.CacheClient
+	rpc     *RMQRPC
 }
 
 // NewServer constructs and initializes REST server
-func NewServer(host string, port int, cache interfaces.CacheClient, rpc *RMQRPC) *Server {
+func NewServer(host string, port, timeout int, cache interfaces.CacheClient, rpc *RMQRPC) *Server {
 	server := &Server{
-		host:   host,
-		port:   port,
-		router: gin.Default(),
-		srv:    nil,
-		cache:  cache,
-		rpc:    rpc,
+		host:    host,
+		port:    port,
+		timeout: timeout,
+		router:  gin.Default(),
+		srv:     nil,
+		cache:   cache,
+		rpc:     rpc,
 	}
 
 	// Set routing handlers
@@ -91,7 +93,7 @@ func (s *Server) handlePreview(c *gin.Context) { // nolint:funlen
 
 		logger.Debug("Proxying request to previewer")
 		// Create RMQRPC context
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(s.timeout)*time.Second)
 		defer cancel()
 
 		// Call previewer and wait for response
