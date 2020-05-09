@@ -57,11 +57,11 @@ spec:
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 8080
+              port: 8000
           readinessProbe:
             httpGet:
               path: /readyz
-              port: 8080
+              port: 8000
           resources:
             limits:
               cpu: 10m

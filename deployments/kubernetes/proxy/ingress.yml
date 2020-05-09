@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: proxy-ingress-name # INGRESS_NAME
+  name: proxy # INGRESS_NAME
   labels:
     # we pass selector, to easy list specific Ingresses:
     # kubectl get ing --selector=KEY_INGRESS_SELECTOR
