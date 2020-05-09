@@ -154,4 +154,6 @@ HTTP-прокси при обработке запроса от клиента �
 Запустите следующую команду, чтобы получить превью с помощью
 микросервисов внутри кластера:
 
-    $ curl -X GET -H "Content-Type: image/jpeg" http://micropic.otus:80/fill/300/200/www.audubon.org/sites/default/files/a1_1902_16_barred-owl_sandra_rothenberg_kk.jpg > preview.jpg
+    $ curl -X GET -H "Content-Type: image/jpeg" \
+        http://micropic.otus:80/fill/300/200/www.audubon.org/sites/default/files/a1_1902_16_barred-owl_sandra_rothenberg_kk.jpg \
+        > preview.jpg
