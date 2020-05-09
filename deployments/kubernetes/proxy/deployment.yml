@@ -35,6 +35,8 @@ spec:
               value: "0.0.0.0"
             - name: PROXY_PORT
               value: "8080"
+            - name: PROXY_TIMEOUT
+              value: "60"
             - name: GRPC_HOST
               value: "cache"
             - name: GRPC_PORT
