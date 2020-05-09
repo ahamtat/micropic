@@ -117,3 +117,41 @@ HTTP-прокси при обработке запроса от клиента �
     {"level":"debug","time":"2020-04-30T17:34:24.706+0300","message":"preview returned successfully"}
     {"level":"debug","time":"2020-04-30T17:34:24.754+0300","message":"preview returned successfully"}
     {"level":"info","time":"2020-04-30T17:34:24.754+0300","message":"Application working time is 9.491443441s"}
+
+## Запуск микросервисов в оркестраторе
+Для запуска проекта в оркестраторе выполните следующую команду:
+
+    $ make kube-up
+      >  Starting services in kubernetes
+    😄  minikube v1.9.2 on Debian 9.12
+    ...
+    deployment.apps/cache created
+    service/cache created
+    deployment.apps/previewer created
+    deployment.apps/proxy created
+    service/proxy created
+    ingress.extensions/proxy created
+    Starting microservices in Kubernetes cluster. Please wait a minute...
+    Microservices are running
+
+Проверьте список запущенных подов:
+
+    $ kubectl get pods
+    NAME                         READY   STATUS    RESTARTS   AGE
+    cache-dd77ccf74-mdjsr        1/1     Running   0          3m49s
+    previewer-544cf4f95c-24cv9   1/1     Running   5          3m49s
+    previewer-544cf4f95c-5qc7c   1/1     Running   4          3m48s
+    previewer-544cf4f95c-cm9lz   1/1     Running   4          3m49s
+    previewer-544cf4f95c-kj8cr   1/1     Running   4          3m48s
+    previewer-544cf4f95c-nfvxp   1/1     Running   4          3m49s
+    proxy-7599f84886-mlvzk       1/1     Running   3          3m49s
+    rabbitmq-0                   1/1     Running   0          3m49s
+    
+Добавим тестовый домен:
+
+    $ echo "$(minikube ip) advent.test" | sudo tee -a /etc/hosts
+    
+Запустите следующую команду, чтобы получить превью с помощью
+микросервисов внутри кластера:
+
+    $ curl -X GET -H "Content-Type: image/jpeg" http://micropic.otus:80/fill/300/200/www.audubon.org/sites/default/files/a1_1902_16_barred-owl_sandra_rothenberg_kk.jpg > preview.jpg
