@@ -19,9 +19,6 @@ type Cache interface {
 	// HasPreview searches preview in cache
 	HasPreview(params *entities.PreviewParams) bool
 
-	// Evict cache item
-	Evict() error
-
 	// Clean cache totally
 	Clean() error
 }
