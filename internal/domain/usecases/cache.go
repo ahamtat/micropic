@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"container/list"
 	"crypto/md5" // nolint:gosec
 	"encoding/hex"
 	"fmt"
@@ -18,8 +19,8 @@ type LRUCache struct {
 	size        int
 	storage     interfaces.Storage
 	mx          sync.RWMutex
-	hashItemMap map[string]*DllItem
-	paramsList  DoublyLinkedList
+	hashItemMap map[string]*list.Element
+	params      *list.List
 }
 
 // NewLRUCache constructor.
@@ -28,8 +29,8 @@ func NewLRUCache(size int, storage interfaces.Storage) interfaces.Cache {
 		size:        size,
 		storage:     storage,
 		mx:          sync.RWMutex{},
-		hashItemMap: make(map[string]*DllItem),
-		paramsList:  DoublyLinkedList{},
+		hashItemMap: make(map[string]*list.Element),
+		params:      list.New(),
 	}
 }
 
@@ -53,10 +54,10 @@ func (c *LRUCache) Save(preview *entities.Preview) error {
 	}
 
 	// Push preview params to doubly linked list
-	item := c.paramsList.PushHead(preview.Params)
-	if c.paramsList.GetLength() > c.size {
+	item := c.params.PushFront(preview.Params)
+	if c.params.Len() > c.size {
 		// Remove preview from cache
-		_ = c.Evict()
+		_ = c.evict()
 	}
 
 	// Evaluate hash key from preview params
@@ -79,14 +80,14 @@ func (c *LRUCache) Get(params *entities.PreviewParams) (*entities.Preview, error
 	// Search item in hash map
 	c.mx.RLock()
 	item, ok := c.hashItemMap[hash]
-	if !ok {
+	if !ok || item == nil {
 		c.mx.RUnlock()
 		return nil, errors.New("no preview in cache")
 	}
 	c.mx.RUnlock()
 
 	// Update item position in list
-	c.paramsList.MoveHead(item)
+	c.params.MoveToFront(item)
 
 	// Get preview image from storage
 	image, err := c.storage.Get(hash)
@@ -101,11 +102,15 @@ func (c *LRUCache) Get(params *entities.PreviewParams) (*entities.Preview, error
 }
 
 // Evict cache item.
-func (c *LRUCache) Evict() error {
+func (c *LRUCache) evict() error {
 	// Get LRU item
-	evictedItem := c.paramsList.PopTail()
+	item := c.params.Back()
+	if item == nil {
+		return errors.New("no list back")
+	}
+	evictedItem := c.params.Remove(item)
 	if evictedItem == nil {
-		return errors.New("failed removing item from doubly linked list tail")
+		return errors.New("failed removing item from list back")
 	}
 	params, ok := evictedItem.(*entities.PreviewParams)
 	if !ok {
@@ -124,8 +129,8 @@ func (c *LRUCache) Evict() error {
 
 // Clean cache totally.
 func (c *LRUCache) Clean() error {
-	c.hashItemMap = make(map[string]*DllItem)
-	c.paramsList.Clean()
+	c.hashItemMap = make(map[string]*list.Element)
+	c.params.Init()
 	return c.storage.Clean()
 }
 
