@@ -9,9 +9,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/AcroManiac/micropic/internal/domain/interfaces"
+	"github.com/ahamtat/micropic/internal/domain/interfaces"
 
-	"github.com/AcroManiac/micropic/internal/domain/entities"
+	"github.com/ahamtat/micropic/internal/domain/entities"
 )
 
 // LRUCache implements Least Recently Used cache

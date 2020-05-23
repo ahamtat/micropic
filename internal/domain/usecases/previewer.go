@@ -3,8 +3,8 @@ package usecases
 import (
 	"net/http"
 
-	"github.com/AcroManiac/micropic/internal/domain/entities"
-	"github.com/AcroManiac/micropic/internal/domain/interfaces"
+	"github.com/ahamtat/micropic/internal/domain/entities"
+	"github.com/ahamtat/micropic/internal/domain/interfaces"
 )
 
 // Previewer object for image operations

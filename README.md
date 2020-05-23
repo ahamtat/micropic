@@ -1,4 +1,4 @@
-# Проект "Превьювер изображений" [![Go Report Card](https://goreportcard.com/badge/github.com/AcroManiac/micropic)](https://goreportcard.com/report/github.com/AcroManiac/micropic) [![CircleCI Build Status](https://circleci.com/gh/AcroManiac/micropic.svg?style=shield)](https://circleci.com/gh/AcroManiac/micropic) [![GPL Licensed](https://img.shields.io/badge/license-GPL-green.svg)](https://raw.githubusercontent.com/AcroManiac/micropic/master/LICENSE)
+# Проект "Превьювер изображений" [![Go Report Card](https://goreportcard.com/badge/github.com/ahamtat/micropic)](https://goreportcard.com/report/github.com/ahamtat/micropic) [![CircleCI Build Status](https://circleci.com/gh/ahamtat/micropic.svg?style=shield)](https://circleci.com/gh/ahamtat/micropic) [![GPL Licensed](https://img.shields.io/badge/license-GPL-green.svg)](https://raw.githubusercontent.com/ahamtat/micropic/master/LICENSE)
 Микросервис изготовления превью для изображений, хранящихся на внешних ресурсах. Проектная работа по курсу OTUS «Разработчик Golang».
 
 Техническое задание на сервис [Превьювер изображений](https://github.com/OtusGolang/final_project/blob/master/03-image-previewer.md)
@@ -48,7 +48,7 @@
     46.637408ms
     testing: warning: no tests to run
     PASS
-    ok  	github.com/AcroManiac/micropic/test/integration	0.057s
+    ok  	github.com/ahamtat/micropic/test/integration	0.057s
 
 Чтобы остановить микросервисы, выполните команду:
     

@@ -3,16 +3,16 @@ package main
 import (
 	"context"
 
-	"github.com/AcroManiac/micropic/internal/adapters/grpcapi"
+	"github.com/ahamtat/micropic/internal/adapters/grpcapi"
 
-	"github.com/AcroManiac/micropic/internal/domain/interfaces"
-	"github.com/AcroManiac/micropic/internal/domain/usecases"
+	"github.com/ahamtat/micropic/internal/domain/interfaces"
+	"github.com/ahamtat/micropic/internal/domain/usecases"
 
-	"github.com/AcroManiac/micropic/internal/domain/entities"
+	"github.com/ahamtat/micropic/internal/domain/entities"
 
-	"github.com/AcroManiac/micropic/internal/adapters/logger"
+	"github.com/ahamtat/micropic/internal/adapters/logger"
 
-	"github.com/AcroManiac/micropic/internal/adapters/broker"
+	"github.com/ahamtat/micropic/internal/adapters/broker"
 	"github.com/streadway/amqp"
 )
 

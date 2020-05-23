@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/AcroManiac/micropic/internal/adapters/logger"
+	"github.com/ahamtat/micropic/internal/adapters/logger"
 )
 
 var (

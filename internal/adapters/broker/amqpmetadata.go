@@ -1,7 +1,7 @@
 package broker
 
 import (
-	"github.com/AcroManiac/micropic/internal/domain/interfaces"
+	"github.com/ahamtat/micropic/internal/domain/interfaces"
 	"github.com/google/uuid"
 )
 

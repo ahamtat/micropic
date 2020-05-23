@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AcroManiac/micropic/internal/adapters/logger"
-	"github.com/AcroManiac/micropic/internal/domain/entities"
-	"github.com/AcroManiac/micropic/internal/domain/interfaces"
+	"github.com/ahamtat/micropic/internal/adapters/logger"
+	"github.com/ahamtat/micropic/internal/domain/entities"
+	"github.com/ahamtat/micropic/internal/domain/interfaces"
 
 	"google.golang.org/grpc"
 )

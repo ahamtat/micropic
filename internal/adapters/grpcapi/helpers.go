@@ -1,6 +1,6 @@
 package grpcapi
 
-import "github.com/AcroManiac/micropic/internal/domain/entities"
+import "github.com/ahamtat/micropic/internal/domain/entities"
 
 func convertParamsToProtobuf(params *entities.PreviewParams) *PreviewParams {
 	return &PreviewParams{

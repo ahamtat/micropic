@@ -11,9 +11,9 @@ import (
 
 	"github.com/muesli/smartcrop"
 
-	"github.com/AcroManiac/micropic/internal/adapters/logger"
+	"github.com/ahamtat/micropic/internal/adapters/logger"
 
-	"github.com/AcroManiac/micropic/internal/domain/entities"
+	"github.com/ahamtat/micropic/internal/domain/entities"
 )
 
 // ImageProcessor

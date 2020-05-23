@@ -1,6 +1,6 @@
 package interfaces
 
-import "github.com/AcroManiac/micropic/internal/domain/entities"
+import "github.com/ahamtat/micropic/internal/domain/entities"
 
 // CacheClient interface
 type CacheClient interface {

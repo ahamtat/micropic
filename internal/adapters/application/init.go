@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/AcroManiac/micropic/internal/adapters/logger"
+	"github.com/ahamtat/micropic/internal/adapters/logger"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"

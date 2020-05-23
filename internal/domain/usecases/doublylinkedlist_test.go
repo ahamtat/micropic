@@ -3,7 +3,7 @@ package usecases_test
 import (
 	"testing"
 
-	"github.com/AcroManiac/micropic/internal/domain/usecases"
+	"github.com/ahamtat/micropic/internal/domain/usecases"
 
 	"github.com/stretchr/testify/require"
 )

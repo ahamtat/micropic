@@ -7,19 +7,19 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/AcroManiac/micropic/internal/adapters/file"
-	"github.com/AcroManiac/micropic/internal/domain/interfaces"
-	"github.com/AcroManiac/micropic/internal/domain/usecases"
+	"github.com/ahamtat/micropic/internal/adapters/file"
+	"github.com/ahamtat/micropic/internal/domain/interfaces"
+	"github.com/ahamtat/micropic/internal/domain/usecases"
 
-	"github.com/AcroManiac/micropic/internal/adapters/grpcapi"
+	"github.com/ahamtat/micropic/internal/adapters/grpcapi"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
 	"github.com/spf13/viper"
 
-	"github.com/AcroManiac/micropic/internal/adapters/logger"
+	"github.com/ahamtat/micropic/internal/adapters/logger"
 
-	"github.com/AcroManiac/micropic/internal/adapters/application"
+	"github.com/ahamtat/micropic/internal/adapters/application"
 )
 
 func init() {

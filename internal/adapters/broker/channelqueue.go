@@ -1,7 +1,7 @@
 package broker
 
 import (
-	"github.com/AcroManiac/micropic/internal/adapters/logger"
+	"github.com/ahamtat/micropic/internal/adapters/logger"
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 )

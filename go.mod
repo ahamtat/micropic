@@ -1,4 +1,4 @@
-module github.com/AcroManiac/micropic
+module github.com/ahamtat/micropic
 
 go 1.14
 

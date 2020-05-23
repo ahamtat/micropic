@@ -1,6 +1,6 @@
 # Build docker image for application
 FROM alpine:latest
-LABEL maintainer="artem.orlov@gmail.com"
+LABEL maintainer="ahamtat108@gmail.com"
 
 RUN apk update && apk upgrade \
     && apk add ca-certificates && update-ca-certificates \
@@ -20,5 +20,5 @@ ENV TZ=Europe/Moscow
 RUN rm -rf /var/cache/apk/*
 
 ENV GOPATH /go
-COPY --from=builder $GOPATH/src/github.com/AcroManiac/micropic/bin/proxy /bin
+COPY --from=builder $GOPATH/src/github.com/ahamtat/micropic/bin/proxy /bin
 CMD ["dockerize", "-wait", "tcp://rabbitmq:15672", "-timeout", "10s", "-wait-retry-interval", "5s", "/bin/proxy"]

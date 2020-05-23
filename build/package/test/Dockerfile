@@ -1,6 +1,6 @@
 # Build docker image for micropic integration tests
 FROM builder
-LABEL maintainer="artem.orlov@gmail.com"
+LABEL maintainer="ahamtat108@gmail.com"
 
 RUN apk update && apk upgrade \
     && apk add ca-certificates && update-ca-certificates \
@@ -23,4 +23,4 @@ RUN apk add git
 RUN rm -rf /var/cache/apk/*
 
 # Set working dir
-WORKDIR $GOPATH/src/github.com/AcroManiac/micropic/test/integration
+WORKDIR $GOPATH/src/github.com/ahamtat/micropic/test/integration

@@ -6,13 +6,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/AcroManiac/micropic/internal/adapters/broker"
+	"github.com/ahamtat/micropic/internal/adapters/broker"
 
 	"github.com/spf13/viper"
 
-	"github.com/AcroManiac/micropic/internal/adapters/logger"
+	"github.com/ahamtat/micropic/internal/adapters/logger"
 
-	"github.com/AcroManiac/micropic/internal/adapters/application"
+	"github.com/ahamtat/micropic/internal/adapters/application"
 )
 
 func init() {

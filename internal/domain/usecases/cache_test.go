@@ -4,12 +4,12 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/AcroManiac/micropic/internal/domain/usecases"
+	"github.com/ahamtat/micropic/internal/domain/usecases"
 
-	"github.com/AcroManiac/micropic/internal/domain/interfaces"
+	"github.com/ahamtat/micropic/internal/domain/interfaces"
 	"github.com/pkg/errors"
 
-	"github.com/AcroManiac/micropic/internal/domain/entities"
+	"github.com/ahamtat/micropic/internal/domain/entities"
 	"github.com/stretchr/testify/require"
 )
 
